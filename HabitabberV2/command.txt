@@ -1,0 +1,2 @@
+java -jar habitabber.jar -p http://www.marktplaats.nl/z/huizen-en-kamers/kamers-te-huur.html?categoryId=2771 -m 1000 -l
+FINE -i -t amsterdam haarlem almere amstelveen weesp purmerend zaandam -v links -c huur

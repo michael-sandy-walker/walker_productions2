@@ -29,6 +29,7 @@ import result.PageFactory;
 import result.SubPage;
 import utilities.Command;
 import utilities.CommandFactory;
+import utilities.ConcatenatedTokenCommand;
 import utilities.IOSingleton;
 import utilities.LogCommand;
 import utilities.MaxSearchCommand;
@@ -57,7 +58,7 @@ public class MainSearcher {
 
 	public String testStr = "http://www.marktplaats.nl/a/huizen-en-kamers/huizen-te-huur/m925913694-woning-te-huur-in-ijmuiden.html?c=efb2ef4dc323389c4f92ed10afa33e3a&previousPage=lr";
 
-//	public static List<String> visitedLinkList = new ArrayList<String>();
+	//	public static List<String> visitedLinkList = new ArrayList<String>();
 	public static Set<String> visitedLinkList = new TreeSet<String>();
 
 	public boolean doImmediateParse = true;
@@ -324,22 +325,29 @@ public class MainSearcher {
 			String linkStr = link.attr("abs:href");			
 
 			boolean containsStr = false;
-			if (TokenCommand.getTokenList() == null || TokenCommand.getTokenList().isEmpty()) {
+			if (TokenCommand.getTokenList() == null || TokenCommand.getTokenList().isEmpty() 
+					&& (ConcatenatedTokenCommand.getTokenList() == null || ConcatenatedTokenCommand.getTokenList().isEmpty())) {
 				if (linkStr.contains("huizen-en-kamers")) {
 					containsStr = true;
 				}
 			} else {				
 				for (Token token : TokenCommand.getTokenList()) {
 					if (linkStr.contains(token.getContent())) {
-						logger.fine("Adding link to page " + page.getUrl() + ": " + linkStr);
 						containsStr = true;
 						break;
 					}
 				}
+				for (Token token : ConcatenatedTokenCommand.getTokenList()) {
+					if (!linkStr.contains(token.getContent())) {						
+						containsStr = false;
+						break;
+					}
+				}
 			}
-			if (containsStr) {
+			if (containsStr) {				
 				SubPage result = new SubPage();	
 				result.setUrl(linkStr);
+				logger.fine("Adding link to page " + page.getUrl() + ": " + linkStr);
 				page.addSubPage(result);
 			}
 		}
@@ -396,7 +404,8 @@ public class MainSearcher {
 	 * 			 -i 			- Immediate parsing of the content
 	 * 			 -m NUMBER  	- The number of the searchable pages 
 	 * 			 -v LINKFILE	- The file of the previously visited links
-	 * 			 -t	TOKEN(S)	- The token(s) links are searched for
+	 * 			 -t	TOKEN(S)	- The disjunctive token(s) links are searched for
+	 * 			 -c CONJUNCTION - The conjunctive tokens links are searched for 
 	 * @param argv 
 	 */
 	public static void main(String[] argv) {

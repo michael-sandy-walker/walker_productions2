@@ -16,6 +16,8 @@ public class CommandFactory {
 			result = new TokenCommand(name, value);
 		} else if (name.equals("v")) {
 			result = new VisitedLinkCommand(name, value);
+		} else if (name.equals("c")) {
+			result = new ConcatenatedTokenCommand(name, value);
 		}
 		
 		return result;
