@@ -47,11 +47,9 @@ public class MainSearcher {
 
 	private List<Token> tokenList = new ArrayList<Token>();
 
-	//	public final static Pattern p = Pattern.compile("/^(?:\\([2-9]\\d{2}\\)\\ ?|[2-9]\\d{2}(?:\\-?|\\ ?))[2-9]\\d{2}[- ]?\\d{4}$/");
-	public final static Pattern p1 = Pattern.compile("(09\\/[0-9]{3}\\.[0-9]{2}\\.[0-9]{2}|04[789][0-9]\\/[0-9]{2}\\.[0-9]{2}\\.[0-9]{2})");
-	public final static Pattern p2 = Pattern.compile(".*(((0)[1-9]{2}[0-9][-]?(\\s?)[1-9][0-9]{5})|((\\+31|0|0031)[1-9][0-9][-]?[1-9][0-9]{6})).*");
-	public final static Pattern p3 = Pattern.compile(".*(((\\+31|0|0031)6){1}[1-9]{1}[0-9]{7}).*", Pattern.CASE_INSENSITIVE);
-	public final static Pattern p4 = Pattern.compile(".*(((0)[1-9][-]?\\s?[1-9][0-9]{2}\\s?[0-9]{5})).*");
+	public final static Pattern p1 = Pattern.compile(".*(((0)[1-9]{2}[0-9][-]?(\\s?)[1-9][0-9]{5})|((\\+31|0|0031)[1-9][0-9][-]?[1-9][0-9]{6})).*");
+	public final static Pattern p2 = Pattern.compile(".*(((\\+31|0|0031)6){1}[1-9]{1}[0-9]{7}).*", Pattern.CASE_INSENSITIVE);
+	public final static Pattern p3 = Pattern.compile(".*(((0)[1-9][-]?\\s?[1-9][0-9]{2}\\s?[0-9]{5})).*");
 
 	public static int MAX_SITES = 1000;
 	public static int counter = 0;
@@ -223,6 +221,7 @@ public class MainSearcher {
 	public MainPage generateTree(String... argv) {
 		MainPage result = null;
 		for (String str : argv) {
+			counter = 0;
 			UrlToken token = new UrlToken(str);
 			tokenList.add(token);
 			result = performSearch(token);
@@ -277,7 +276,7 @@ public class MainSearcher {
 			for (SubPage subPage : page.getSubPageList()) {
 
 				// 4.) if link of current node is not within visitedList
-				if (!containsString(visitedLinkList, subPage.getUrl()) && counter < MAX_SITES) {
+				if (!visitedLinkList.contains(subPage.getUrl()) && counter < MAX_SITES) {
 					counter++;					
 					// 5.) repeat steps
 					try {
@@ -327,9 +326,7 @@ public class MainSearcher {
 			boolean containsStr = false;
 			if (TokenCommand.getTokenList() == null || TokenCommand.getTokenList().isEmpty() 
 					&& (ConcatenatedTokenCommand.getTokenList() == null || ConcatenatedTokenCommand.getTokenList().isEmpty())) {
-				if (linkStr.contains("huizen-en-kamers")) {
-					containsStr = true;
-				}
+				containsStr = true;
 			} else {				
 				for (Token token : TokenCommand.getTokenList()) {
 					if (linkStr.contains(token.getContent())) {
@@ -355,46 +352,39 @@ public class MainSearcher {
 
 	public void parseContent(MainPage page) {
 		// Parse the content and stuff it into Site.
-		Document doc = Jsoup.parse(page.getUnparsedContent());	
-		Elements media = doc.select("[src]");
+		String unparsedContent = page.getUnparsedContent();
+		if (unparsedContent != null && !unparsedContent.isEmpty()) {
+			Document doc = Jsoup.parse(unparsedContent);	
+			Elements media = doc.select("[src]");
 
-		logger.finest(doc.toString());
+			logger.finest(doc.toString());
 
-		for (Element medium : media) {
-			if (medium.tagName().equals("img"))
-				page.setContent("media", medium.attr("abs:src"));			
-		}
+			for (Element medium : media) {
+				if (medium.tagName().equals("img"))
+					page.setContent("media", medium.attr("abs:src"));			
+			}
 
-		for (Element elem : doc.getAllElements()) {
-			for (Node node : elem.childNodes()) {
-				if (node instanceof TextNode) {
-					String text = ((TextNode)node).text();
+			for (Element elem : doc.getAllElements()) {
+				for (Node node : elem.childNodes()) {
+					if (node instanceof TextNode) {
+						String text = ((TextNode)node).text();
 
-					Matcher m1 = p1.matcher(text);	
-					Matcher m2 = p2.matcher(text);
-					Matcher m3 = p3.matcher(text);
-					Matcher m4 = p4.matcher(text);
-					if (m1.matches() || m2.matches() || m3.matches() || m4.matches()) {
-						logger.fine(text);		
-						if (doImmediateParse) {
-							String str = "Found: " + page.getUrl() + " , Tel: " + text;
-							System.out.println(str);
-							io.write(str + "\n", true);
+						Matcher m1 = p1.matcher(text);	
+						Matcher m2 = p2.matcher(text);
+						Matcher m3 = p3.matcher(text);
+						if (m1.matches() || m2.matches() || m3.matches()) {
+							logger.fine(text);		
+							if (doImmediateParse) {
+								String str = "Found: " + page.getUrl() + " , Tel: " + text;
+								System.out.println(str);
+								io.write(str + "\n", true);
+							}
+							page.setContent("tel", text);
 						}
-						page.setContent("tel", text);
 					}
 				}
 			}
 		}
-	}
-
-	public boolean containsString(Set<String> list, String str) {
-		for (String s : list) {
-			if(s.equals(str)) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	/**
