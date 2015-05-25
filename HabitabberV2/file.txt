@@ -1,2 +1,0 @@
-2015/05/24 13:50:24 - HabitabberV2 initialized.
-2015/05/24 13:51:30 - HabitabberV2 terminated.

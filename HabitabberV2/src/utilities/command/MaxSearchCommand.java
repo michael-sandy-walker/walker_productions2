@@ -1,4 +1,4 @@
-package utilities;
+package utilities.command;
 
 public class MaxSearchCommand extends Command {
 	

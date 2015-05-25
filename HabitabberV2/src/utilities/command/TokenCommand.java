@@ -1,7 +1,9 @@
-package utilities;
+package utilities.command;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import utilities.Token;
 
 public class TokenCommand extends Command {
 	

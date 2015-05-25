@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -60,14 +61,14 @@ public class IOSingleton {
 				bw = new PrintWriter(new BufferedWriter(new FileWriter(writerFileName, false)));
 			}
 			if (br == null) {
-//				br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(getReadFileName()))));
+				//				br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(getReadFileName()))));
 				;
 			} 
 		} catch (IOException e) { 
 			e.printStackTrace();
 		}
 	}		
-	
+
 	private IOSingleton(boolean initialize) {
 		this(initialize, false);
 	}
@@ -77,7 +78,7 @@ public class IOSingleton {
 	 * If initialize is set to true, the initial line of a CSV will be read and global variables will be initialized accordingly.
 	 */
 	private IOSingleton(boolean initialize, boolean retrieveOldSession) {
-		
+
 		try {			
 			if (bw == null) {
 				bw = new PrintWriter(new BufferedWriter(new FileWriter(writerFileName, retrieveOldSession)));
@@ -88,7 +89,7 @@ public class IOSingleton {
 		} catch (IOException e) { 
 			e.printStackTrace();
 		}
-		
+
 		if (initialize) {						
 			readLine();											
 			String attribute = "";
@@ -113,7 +114,7 @@ public class IOSingleton {
 	public static IOSingleton getIOSingleton(boolean readInitialLine) {
 		return getIOSingleton(readInitialLine, false);
 	}
-	
+
 	/**
 	 * Retrieves the singleton.
 	 * @return IOSingleton
@@ -165,7 +166,7 @@ public class IOSingleton {
 	public void write(String str, boolean writeNClose) {		
 		write(str, writeNClose, true);
 	}
-	
+
 	/**
 	 * Writes a value to the file "testdata.new.csv".
 	 * @param str The value
@@ -196,10 +197,19 @@ public class IOSingleton {
 		try {
 			if (br.ready()) {
 				result = br.readLine();
-//				attributeIterator = Arrays.asList(result.split(Command.DELIMITER)).iterator();				
+				//				attributeIterator = Arrays.asList(result.split(Command.DELIMITER)).iterator();				
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			//			e.printStackTrace();			
+			try {
+				br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(getReadFileName()))));
+				if (br.ready()) {
+					result = br.readLine();
+				}
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+
 		}
 		return result;
 	}

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+
+<AnchorPane prefHeight="600.0" prefWidth="800.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8">
+   <children>
+      <SplitPane dividerPositions="0.47117794486215536" prefHeight="600.0" prefWidth="800.0">
+        <items>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+               <children>
+                  <TextField layoutX="195.0" layoutY="21.0" />
+                  <TextField layoutX="195.0" layoutY="47.0" />
+                  <TextField layoutX="195.0" layoutY="73.0" />
+                  <TextField layoutX="195.0" layoutY="151.0" />
+                  <TextField layoutX="195.0" layoutY="125.0" />
+                  <TextField layoutX="195.0" layoutY="99.0" />
+                  <TextField layoutX="195.0" layoutY="177.0" />
+                  <Label layoutX="102.0" layoutY="26.0" text="Page(s)" />
+                  <Label layoutX="102.0" layoutY="52.0" text="Token(s)" />
+                  <Label layoutX="102.0" layoutY="78.0" text="Conjunction(s)" />
+                  <Label layoutX="102.0" layoutY="104.0" text="Log level" />
+                  <Label layoutX="102.0" layoutY="130.0" text="Page limit" />
+                  <Label layoutX="102.0" layoutY="156.0" text="Link file" />
+                  <Label layoutX="102.0" layoutY="182.0" text="Immediate" />
+                  <Button layoutX="195.0" layoutY="213.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="163.0" text="Search" />
+               </children>
+            </AnchorPane>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+               <children>
+                  <ScrollPane layoutX="14.0" layoutY="14.0" prefHeight="572.0" prefWidth="392.0">
+                    <content>
+                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="570.0" prefWidth="390.0">
+                           <children>
+                              <TextArea prefHeight="572.0" prefWidth="392.0" />
+                           </children>
+                        </AnchorPane>
+                    </content>
+                  </ScrollPane>
+               </children>
+            </AnchorPane>
+        </items>
+      </SplitPane>
+   </children>
+</AnchorPane>

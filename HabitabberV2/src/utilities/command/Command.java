@@ -1,4 +1,7 @@
-package utilities;
+package utilities.command;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Command {
 	
@@ -6,6 +9,8 @@ public class Command {
 	
 	private String name;
 	private String value;
+	
+	private static final List<String> registeredCommands = new ArrayList<String>();
 	
 	public Command(String name, String value) {
 		this.setName(name);
@@ -38,5 +43,13 @@ public class Command {
 	 */
 	public void setValue(String value) {
 		this.value = value;
+	}
+	
+	public static List<String> getRegisteredCommands() {
+		return registeredCommands;
+	}
+	
+	public static void registerCommand(String cmd) {
+		registeredCommands.add(cmd);
 	}
 }

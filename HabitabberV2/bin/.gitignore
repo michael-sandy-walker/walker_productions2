@@ -1,5 +1,5 @@
-/.DS_Store
-/controller/
-/result/
-/utilities/
 /view/
+/utilities/
+/controller/
+/command/
+/button/

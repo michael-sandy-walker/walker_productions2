@@ -1,7 +1,7 @@
-package utilities;
+package utilities.command;
 
 public class ParseImmediateCommand extends Command {
-
+	
 	private static boolean parseImmediate = false;
 	
 	public ParseImmediateCommand(String name, String value) {
