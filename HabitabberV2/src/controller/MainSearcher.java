@@ -111,7 +111,6 @@ public class MainSearcher {
 		try {
 
 			if (argv != null && argv.length > 0) {
-				counter = 0;
 				/**
 				 * Begin setup
 				 */
@@ -175,6 +174,7 @@ public class MainSearcher {
 	}
 
 	public void terminate() {
+		counter = 0;
 		setStop(true);
 		if (io != null) {
 //			List<Thread> threadPool = SearchAction.getThreadPool();
