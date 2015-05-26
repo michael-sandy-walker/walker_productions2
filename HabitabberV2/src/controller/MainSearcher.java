@@ -207,7 +207,6 @@ public class MainSearcher {
 			}
 			io.setWriterFileName(visitedLinkListName);
 			for (String link : visitedLinkList) {
-				System.out.println("link: " + link);
 				io.write(link + "\n", false, false);
 			}
 			io.closeIO();	
