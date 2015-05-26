@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -27,7 +26,7 @@ public class IOSingleton {
 	/**
 	 * The list of attribute names (i.e., titles).
 	 */
-	private static final List<String> attributeNameLst = new ArrayList<String>();
+	private static List<String> attributeNameLst = new ArrayList<String>();
 
 	/**
 	 * The iterator for the attributes.
@@ -96,6 +95,36 @@ public class IOSingleton {
 			while ((attribute = readAttribute()) != null) {
 				attributeNameLst.add(attribute);				
 			}
+		}
+	}
+	
+	public void reset(boolean retrieveOldSession) {
+		readFileName = "file.txt";
+		writerFileName = "file.txt";
+		currentAttribute = null;
+		attributeNameLst = new ArrayList<String>();
+		attributeIterator = null;
+		if (bw != null) {
+			bw.flush();
+			bw.close();
+			
+		} 
+		if (br != null) {
+			try {
+				br.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		try {
+			bw = new PrintWriter(new BufferedWriter(new FileWriter(writerFileName, retrieveOldSession)));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		try {
+			br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(getReadFileName()))));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
 		}
 	}
 

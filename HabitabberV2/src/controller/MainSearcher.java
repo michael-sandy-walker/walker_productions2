@@ -17,6 +17,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javafx.application.Platform;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -65,10 +67,12 @@ public class MainSearcher {
 	private List<Command> commandList = null;
 
 	private static Logger logger = Logger.getLogger("MainSearcher");
-	
+
 	private static MainSearcher singleton;
-	
+
 	private static boolean stop;
+
+	private static String[] pageArr;
 
 	IOSingleton io;
 	static {
@@ -96,17 +100,17 @@ public class MainSearcher {
 		//set the console handler to fine:
 		consoleHandler.setLevel(java.util.logging.Level.FINEST);
 	}
-	
+
 	private MainSearcher(String[] argv) {				
 	}
-	
+
 	public static MainSearcher getSingleton(String[] argv) {
 		if (MainSearcher.singleton == null) {
 			MainSearcher.singleton = new MainSearcher(argv);
 		}	
 		return singleton;
 	}
-	
+
 	public void activate(String[] argv) {
 		try {
 
@@ -116,33 +120,13 @@ public class MainSearcher {
 				 */
 				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 				Date date = new Date();				
-				String[] pageArr = null; 
-				commandList = parseCommands(argv);
-				doImmediateParse = ParseImmediateCommand.isParseImmediate();
-				logger.setLevel(LogCommand.getLevel());
-				MAX_SITES = MaxSearchCommand.getMaxSearches();
 
-				boolean hasVisitedLinkCommand = VisitedLinkCommand.getVisitedLinkFileName() != null && !VisitedLinkCommand.getVisitedLinkFileName().isEmpty();
-				io = IOSingleton.getIOSingleton(false, hasVisitedLinkCommand);				
-				if (hasVisitedLinkCommand) {
-					addVisitedLinksFromFile(VisitedLinkCommand.getVisitedLinkFileName());
-				}														
-				if (commandList.isEmpty() || (commandList.size() == 1 && (commandList.get(0) == null || !commandList.get(0).getName().equals("p")))) {				
-					// just a page input
-					pageArr = argv;				
-				} else { // retrieve pages from PageCommand
-					for (Command cmd : commandList) {
-						if (cmd != null) {
-							logger.fine("Command: " + cmd.getName() + " Attribute: " + cmd.getValue());
+				assignInputParams(argv);
 
-							if (cmd instanceof PageCommand && cmd.getValue() != null) {
-								pageArr = cmd.getValue().split(Command.DELIMITER);
-							}
-						}
-					}			
-				}			
 				logger.info("Maximum number of searchable pages: " + MAX_SITES);
-				io.write(dateFormat.format(date) + " - HabitabberV2 initialized.\n", true);
+				//				io.write(dateFormat.format(date) + " - HabitabberV2 initialized.\n", true);
+				outputText(dateFormat.format(date) + " - HabitabberV2 initialized.\n");
+
 				/**
 				 * End setup
 				 */
@@ -161,40 +145,74 @@ public class MainSearcher {
 			terminate();
 		}
 	}
-	
+
+	public void assignInputParams(String[] argv) {
+		pageArr = null; 
+		commandList = parseCommands(argv);
+		doImmediateParse = ParseImmediateCommand.isParseImmediate();
+		logger.setLevel(LogCommand.getLevel());
+		MAX_SITES = MaxSearchCommand.getMaxSearches();
+
+		boolean hasVisitedLinkCommand = VisitedLinkCommand.getVisitedLinkFileName() != null && !VisitedLinkCommand.getVisitedLinkFileName().isEmpty();
+		io = IOSingleton.getIOSingleton(false, hasVisitedLinkCommand);				
+		if (hasVisitedLinkCommand) {
+			logger.fine("Adding visited links");
+			addVisitedLinksFromFile(VisitedLinkCommand.getVisitedLinkFileName());
+		}														
+		if (commandList.isEmpty() || (commandList.size() == 1 && (commandList.get(0) == null || !commandList.get(0).getName().equals("p")))) {				
+			// just a page input
+			pageArr = argv;				
+		} else { // retrieve pages from PageCommand
+			for (Command cmd : commandList) {
+				if (cmd != null) {
+					logger.fine("Command: " + cmd.getName() + " Attribute: " + cmd.getValue());
+
+					if (cmd instanceof PageCommand && cmd.getValue() != null && !cmd.getValue().isEmpty()) {
+						pageArr = cmd.getValue().split(Command.DELIMITER);
+					}
+				}
+			}			
+		}	
+	}
+
 	public void addVisitedLinksFromFile(String fileName) {
 		if (io == null) {
 			io = IOSingleton.getIOSingleton();
 		}
 		io.setReadFileName(fileName);
-		String line = io.readLine();
-		while (line != null) {
+		String line = null;
+		while ((line = io.readLine()) != null) {
 			visitedLinkList.add(line);
 		}
 	}
 
 	public void terminate() {
+		//		if (!isStop()) {
+		io.reset(true);
 		counter = 0;
 		setStop(true);
 		if (io != null) {
-//			List<Thread> threadPool = SearchAction.getThreadPool();
-//			for (Thread t : threadPool) {
-//				t.interrupt();								
-//			}
-			System.out.println("");
+			//			List<Thread> threadPool = SearchAction.getThreadPool();
+			//			for (Thread t : threadPool) {
+			//				t.interrupt();								
+			//			}
+			//				System.out.println("");
 			DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 			Date date = new Date();
-			io.write(dateFormat.format(date) + " - HabitabberV2 terminated.\n", true);
+			//			io.write(dateFormat.format(date) + " - HabitabberV2 terminated.\n", true);
+			outputText(dateFormat.format(date) + " - HabitabberV2 terminated.\n");
 			String visitedLinkListName = io.getReadFileName();
 			if (visitedLinkListName == null || visitedLinkListName.isEmpty()) {
 				visitedLinkListName = "visitedLinkList.txt";
 			}
 			io.setWriterFileName(visitedLinkListName);
 			for (String link : visitedLinkList) {
+				System.out.println("link: " + link);
 				io.write(link + "\n", false, false);
 			}
 			io.closeIO();	
 		}
+		//		}
 	}
 
 	public List<Command>parseCommands(String... argv) {
@@ -259,27 +277,6 @@ public class MainSearcher {
 		return result;
 	}
 
-	public void searchTree(MainPage page) {
-		if (!isStop()) {
-			parseContent(page);
-
-			Object tel = page.getContent().get("tel");
-			if (tel != null) {
-				//			logger.info("Found: " + page.getUrl());
-				String str = "Found: " + page.getUrl() + " , Tel: " + tel.toString();
-				System.out.println(str);
-				io.write(str + "\n", true);
-				HabitabberGUI.getOutputtextarea().appendText(str);
-			}
-
-			// recursive call
-			List<SubPage> subPageList = page.getSubPageList();
-			for (SubPage subPage : subPageList) {		
-				searchTree(subPage);
-			}
-		}
-	}
-
 	public MainPage performSearch(UrlToken token) {
 		if (!isStop()) {
 			return performSearch(token, false);
@@ -294,16 +291,16 @@ public class MainSearcher {
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
-		
+
 		//		System.out.print(counter + " ");
 		if (logger.getLevel().equals(Level.INFO)) {
-			System.out.print(">");
+			System.out.print(">");		
 			if (counter != 0 && counter%60 == 0) {
 				System.out.println("");
 			}
 		}
-		if (isSubPage)
-			visitedLinkList.add(token.getUrl());
+		//		if (isSubPage)
+		visitedLinkList.add(token.getUrl());
 
 		logger.fine("token: " + token.getUrl());
 		// 1.) retrieve page (first page = root)
@@ -331,6 +328,29 @@ public class MainSearcher {
 		}
 
 		return page;
+	}
+
+	public void searchTree(MainPage page) {
+		if (!isStop()) {
+			parseContent(page);
+
+			Object tel = page.getContent().get("tel");
+			if (tel != null) {
+				//			logger.info("Found: " + page.getUrl());
+				String str = "Found: " + page.getUrl() + " , Tel: " + tel.toString();
+				//				System.out.println(str);
+				//				io.write(str + "\n", true);
+				//				io.write(page.getUrl(), true);
+				outputText(str + "\n");
+				//				HabitabberGUI.getOutputtextarea().appendText(str);
+			}
+
+			// recursive call
+			List<SubPage> subPageList = page.getSubPageList();
+			for (SubPage subPage : subPageList) {		
+				searchTree(subPage);
+			}
+		}
 	}
 
 	public MainPage retrievePage(String url) {
@@ -371,13 +391,13 @@ public class MainSearcher {
 				containsStr = true;
 			} else {				
 				for (Token token : TokenCommand.getTokenList()) {
-					if (linkStr.contains(token.getContent())) {
+					if (!linkStr.isEmpty() && linkStr.contains(token.getContent())) {
 						containsStr = true;
 						break;
 					}
 				}
 				for (Token token : ConcatenatedTokenCommand.getTokenList()) {
-					if (!linkStr.contains(token.getContent())) {						
+					if (linkStr.isEmpty() || !linkStr.contains(token.getContent())) {						
 						containsStr = false;
 						break;
 					}
@@ -418,9 +438,11 @@ public class MainSearcher {
 							logger.fine(text);		
 							if (doImmediateParse) {
 								String str = "Found: " + page.getUrl() + " , Tel: " + text;
-								System.out.println(str);
-								io.write(str + "\n", true);
-								HabitabberGUI.appendOutputText(str + "\n");
+								//								System.out.println(str);
+								//								io.write(str + "\n", true);
+								//								HabitabberGUI.appendOutputText(str + "\n");
+								//								io.write(page.getUrl(), true);
+								outputText(str + "\n");				
 							}
 							page.setContent("tel", text);
 						}
@@ -442,9 +464,12 @@ public class MainSearcher {
 	 * @param argv 
 	 */
 	public static void main(String[] argv) {
+		inMain = true;
 		MainSearcher mainSearcher = new MainSearcher(argv);
-		mainSearcher.activate(argv);
+		mainSearcher.activate(argv);		
 	}
+
+	private static boolean inMain = false;
 
 	/**
 	 * @return the stop
@@ -458,5 +483,18 @@ public class MainSearcher {
 	 */
 	public static void setStop(boolean stop) {
 		MainSearcher.stop = stop;
+	}
+
+	public void outputText(String str) {	
+		io.write(str, true);
+		if (!inMain) {
+			Platform.runLater(new Runnable() {
+				@Override
+				public void run() {
+					HabitabberGUI.appendOutputText(str);                                
+				}
+			});		
+		}
+		System.out.println(str);
 	}
 }

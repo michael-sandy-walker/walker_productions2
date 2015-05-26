@@ -6,6 +6,7 @@ public class StopAction extends PapaAction {
 	@Override
 	public void performAction() {		
 		new Thread(new StopThread()).start();;
+//		MainSearcher.getSingleton(null).terminate();
 	}
 	
 	public class StopThread implements Runnable {

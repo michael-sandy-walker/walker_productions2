@@ -11,9 +11,11 @@ public class TokenCommand extends Command {
 
 	public TokenCommand(String name, String value) {
 		super(name, value);
-		tokenList = new ArrayList<Token>();
-		for (String v : value.split(TokenCommand.DELIMITER)) {
-			tokenList.add(new Token(v));
+		if (value != null && ! value.isEmpty()) {
+			tokenList = new ArrayList<Token>();
+			for (String v : value.split(TokenCommand.DELIMITER)) {
+				tokenList.add(new Token(v));
+			}
 		}
 	}
 	

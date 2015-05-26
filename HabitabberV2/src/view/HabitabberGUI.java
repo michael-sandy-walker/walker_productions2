@@ -48,7 +48,7 @@ public class HabitabberGUI extends Application {
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		this.stage= primaryStage;
+		HabitabberGUI.stage= primaryStage;
 		primaryStage.setTitle(TITLE);
 
 		Scene scene = new Scene(new VBox(), 1200, 600);
@@ -117,7 +117,7 @@ public class HabitabberGUI extends Application {
 
 		CommandFactory.registerCommands();
 		
-		grid.add(new PapaField("-p").getTextField(),0,1,3,1);
+		grid.add(new PapaField("-p", "http://www.marktplaats.nl/z.html?attributes=S%2C4548&priceTo=800%2C00&categoryId=2143&postcode=&distance=25000").getTextField(),0,1,3,1);
 		searchButton.getButton().setPrefSize(100, 20);		
 		grid.add(searchButton.getButton(),3,1);
 		stopButton.getButton().setPrefSize(50, 20);
@@ -153,6 +153,9 @@ public class HabitabberGUI extends Application {
 				if (cmd.equals("ParseImmediateCommand")) {
 					ParseImmediateField field = new ParseImmediateField("-" + CommandFactory.getCommandParamByClassName(cmd));
 					grid.add(field.getCheckbox(), 1, hIndex);
+				} else if (cmd.equals("TokenCommand")){
+					PapaField field = new PapaField("-" + CommandFactory.getCommandParamByClassName(cmd), "huizen-en-kamers");
+					grid.add(field.getTextField(), 1, hIndex);
 				} else {
 					PapaField field = new PapaField("-" + CommandFactory.getCommandParamByClassName(cmd));
 					grid.add(field.getTextField(), 1, hIndex);
@@ -165,8 +168,8 @@ public class HabitabberGUI extends Application {
 	}
 	
 	public static void appendOutputText(String str) {
-		System.out.println("append:"+ str);
-		outputTextArea.appendText(str);
+//		System.out.println("append:"+ str + "\n");
+		HabitabberGUI.outputTextArea.appendText(str);
 		stage.show();
 	}
 
