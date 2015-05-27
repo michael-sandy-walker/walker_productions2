@@ -7,8 +7,10 @@ import java.util.List;
 import controller.MainSearcher;
 import utilities.command.Command;
 import utilities.command.CommandFactory;
+import view.action.RemoveAction;
 import view.button.AddRegExButton;
 import view.button.PapaButton;
+import view.button.RemoveButton;
 import view.button.SearchButton;
 import view.button.StopButton;
 import view.field.PapaField;
@@ -19,6 +21,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
@@ -43,6 +46,8 @@ public class HabitabberGUI extends Application {
 	private static Stage stage;
 	
 	private static int hIndex = 2;
+	
+	private static int hIndexOffset = hIndex;
 	
 	/**
 	 * Only for test reasons.
@@ -123,31 +128,34 @@ public class HabitabberGUI extends Application {
 
 		CommandFactory.registerCommands();
 		
-		grid.add(new PapaField("-p", "http://www.marktplaats.nl/z.html?attributes=S%2C4548&priceTo=800%2C00&categoryId=2143&postcode=&distance=25000").getTextField(),0,1,3,1);
+		grid.add(new PapaField("-p", "http://www.marktplaats.nl/z.html?attributes=S%2C4548&priceTo=800%2C00&categoryId=2143&postcode=&distance=25000").getTextField(),0,1,4,1);
 		searchButton.getButton().setPrefSize(100, 20);		
-		grid.add(searchButton.getButton(),3,1);
+		grid.add(searchButton.getButton(),4,1);
 		stopButton.getButton().setPrefSize(50, 20);
-		grid.add(stopButton.getButton(),4,1);
+		grid.add(stopButton.getButton(),5,1);
 		
-		Image stopIcon = new Image(HabitabberGUI.class.getResourceAsStream("rsz_stop.png"));
+//		java.awt.Image stopIcon = java.awt.Toolkit.getDefaultToolkit().getImage(getClass().getResource("/view/stop.png"));
+		Image stopIcon = new Image(HabitabberGUI.class.getResourceAsStream("/view/stop.png"));
 		stopButton.getButton().setText("");
 		stopButton.getButton().setGraphic(new ImageView(stopIcon));
 		
 		getOutputtextarea().setPrefHeight(600);
-		grid.add(getOutputtextarea(), 2, 2, 3, 18);
+		grid.add(getOutputtextarea(), 3, 2, 3, 18);
 		
 		ColumnConstraints col1Constraints = new ColumnConstraints();
 		col1Constraints.setPercentWidth(120);
 		ColumnConstraints col2Constraints = new ColumnConstraints();
-		col2Constraints.setPercentWidth(300);
+		col2Constraints.setPercentWidth(250);
 		ColumnConstraints col3Constraints = new ColumnConstraints();
-		col3Constraints.setPercentWidth(630);
+		col3Constraints.setPercentWidth(50);
 		ColumnConstraints col4Constraints = new ColumnConstraints();
-		col4Constraints.setPercentWidth(100);
+		col4Constraints.setPercentWidth(630);
 		ColumnConstraints col5Constraints = new ColumnConstraints();
-		col5Constraints.setPercentWidth(50);
+		col5Constraints.setPercentWidth(100);
+		ColumnConstraints col6Constraints = new ColumnConstraints();
+		col6Constraints.setPercentWidth(50);
 		
-		grid.getColumnConstraints().addAll(col1Constraints, col2Constraints, col3Constraints, col4Constraints, col5Constraints);
+		grid.getColumnConstraints().addAll(col1Constraints, col2Constraints, col3Constraints, col4Constraints, col5Constraints, col6Constraints);
 
 		//Add input fields and fill SearchAction with it
 		hIndex = 2;
@@ -158,20 +166,21 @@ public class HabitabberGUI extends Application {
 				grid.add(label, 0, hIndex);
 				if (cmd.equals("ParseImmediateCommand")) {
 					ParseImmediateField field = new ParseImmediateField("-" + CommandFactory.getCommandParamByClassName(cmd));
-					grid.add(field.getCheckbox(), 1, hIndex);
+					grid.add(field.getCheckbox(), 1, hIndex, 2, 1);
 				} else if (cmd.equals("TokenCommand")){
 					PapaField field = new PapaField("-" + CommandFactory.getCommandParamByClassName(cmd), "huizen-en-kamers");
-					grid.add(field.getTextField(), 1, hIndex);
+					grid.add(field.getTextField(), 1, hIndex, 2, 1);
 				} else {
 					PapaField field = new PapaField("-" + CommandFactory.getCommandParamByClassName(cmd));
-					grid.add(field.getTextField(), 1, hIndex);
+					grid.add(field.getTextField(), 1, hIndex, 2, 1);
 				}
 //				grid.add(new Label(cmd + " ( -" + CommandFactory.getCommandParamByClassName(cmd) + " )"), 0, hIndex);
 				
 				hIndex++;
 			}
 		}
-		grid.add(new AddRegExButton(this, grid).getButton(), 0, hIndex++);
+		hIndexOffset = hIndex++;
+		grid.add(new AddRegExButton(this, grid).getButton(), 0, hIndexOffset);
 	}
 	
 	public static void appendOutputText(String str) {
@@ -187,13 +196,30 @@ public class HabitabberGUI extends Application {
 		return outputTextArea;
 	}
 	
-	List<RegExField> regExFieldList = new ArrayList<RegExField>();
-	
 	public void addRegExField(GridPane grid, String regEx) {
-		RegExField regExField = new RegExField("-r" + regExFieldList.size(), regEx);
-		regExFieldList.add(regExField);
-		grid.add(new Label("Regex " + regExFieldList.size()), 0, hIndex);
-		grid.add(regExField.getTextField(), 1, hIndex);
+		int firstFreeHIndex = PapaField.retrieveFirstFreeHIndex();
+		List<Node> nodeList = new ArrayList<Node>();
+		String name = "" + firstFreeHIndex;
+		RegExField regExField = new RegExField(name, regEx);
+//		regExFieldList.add(regExField);
+		Label label = new Label("Regex " + firstFreeHIndex);		
+		grid.add(label, 0, firstFreeHIndex);
+		grid.add(regExField.getTextField(), 1, firstFreeHIndex);
+		
+		Image removeIcon = new Image(HabitabberGUI.class.getResourceAsStream("/view/delete.png"));
+		RemoveButton removeButton = new RemoveButton(name, new RemoveAction(name));
+		removeButton.getButton().setText("");
+		removeButton.getButton().setGraphic(new ImageView(removeIcon));
+		grid.add(removeButton.getButton(), 2, firstFreeHIndex);
+		nodeList.add(label);
+		nodeList.add(regExField.getTextField());
+		nodeList.add(removeButton.getButton());
+		regExField.setRegExRowNodes(nodeList);
+		regExField.setHIndex(firstFreeHIndex);
 		hIndex++;
+	}
+
+	public static int getHIndexOffset() {
+		return hIndexOffset;
 	}
 }

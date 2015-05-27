@@ -57,9 +57,9 @@ public class MainSearcher {
 		patternList.add(Pattern.compile(".*(((\\+31|0|0031)6){1}[1-9]{1}[0-9]{7}).*", Pattern.CASE_INSENSITIVE));
 		patternList.add(Pattern.compile(".*(((0)[1-9][-]?\\s?[1-9][0-9]{2}\\s?[0-9]{5})).*"));
 	}
-//	public final static Pattern p1 = Pattern.compile(".*(((0)[1-9]{2}[0-9][-]?(\\s?)[1-9][0-9]{5})|((\\+31|0|0031)[1-9][0-9][-]?[1-9][0-9]{6})).*");
-//	public final static Pattern p2 = Pattern.compile(".*(((\\+31|0|0031)6){1}[1-9]{1}[0-9]{7}).*", Pattern.CASE_INSENSITIVE);
-//	public final static Pattern p3 = Pattern.compile(".*(((0)[1-9][-]?\\s?[1-9][0-9]{2}\\s?[0-9]{5})).*");
+	//	public final static Pattern p1 = Pattern.compile(".*(((0)[1-9]{2}[0-9][-]?(\\s?)[1-9][0-9]{5})|((\\+31|0|0031)[1-9][0-9][-]?[1-9][0-9]{6})).*");
+	//	public final static Pattern p2 = Pattern.compile(".*(((\\+31|0|0031)6){1}[1-9]{1}[0-9]{7}).*", Pattern.CASE_INSENSITIVE);
+	//	public final static Pattern p3 = Pattern.compile(".*(((0)[1-9][-]?\\s?[1-9][0-9]{2}\\s?[0-9]{5})).*");
 
 	public static int MAX_SITES = 1000;
 	public static int counter = 0;
@@ -179,7 +179,7 @@ public class MainSearcher {
 						for (String cmdSplitlet : cmd.getValue().split(Command.DELIMITER)) {
 							patternList.add(Pattern.compile(cmdSplitlet));
 						}
-					
+
 					}
 				}
 			}			
@@ -199,28 +199,30 @@ public class MainSearcher {
 
 	public void terminate() {
 		//		if (!isStop()) {
-		io.reset(true);
-		counter = 0;
-		setStop(true);
 		if (io != null) {
-			//			List<Thread> threadPool = SearchAction.getThreadPool();
-			//			for (Thread t : threadPool) {
-			//				t.interrupt();								
-			//			}
-			//				System.out.println("");
-			DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-			Date date = new Date();
-			//			io.write(dateFormat.format(date) + " - HabitabberV2 terminated.\n", true);
-			outputText(dateFormat.format(date) + " - HabitabberV2 terminated.\n");
-			String visitedLinkListName = io.getReadFileName();
-			if (visitedLinkListName == null || visitedLinkListName.isEmpty()) {
-				visitedLinkListName = "visitedLinkList.txt";
+			io.reset(true);
+			counter = 0;
+			setStop(true);
+			if (io != null) {
+				//			List<Thread> threadPool = SearchAction.getThreadPool();
+				//			for (Thread t : threadPool) {
+				//				t.interrupt();								
+				//			}
+				//				System.out.println("");
+				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+				Date date = new Date();
+				//			io.write(dateFormat.format(date) + " - HabitabberV2 terminated.\n", true);
+				outputText(dateFormat.format(date) + " - HabitabberV2 terminated.\n");
+				String visitedLinkListName = io.getReadFileName();
+				if (visitedLinkListName == null || visitedLinkListName.isEmpty()) {
+					visitedLinkListName = "visitedLinkList.txt";
+				}
+				io.setWriterFileName(visitedLinkListName);
+				for (String link : visitedLinkList) {
+					io.write(link + "\n", false, false);
+				}
+				io.closeIO();	
 			}
-			io.setWriterFileName(visitedLinkListName);
-			for (String link : visitedLinkList) {
-				io.write(link + "\n", false, false);
-			}
-			io.closeIO();	
 		}
 		//		}
 	}

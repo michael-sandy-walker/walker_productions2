@@ -1,7 +1,6 @@
 package view.action;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javafx.concurrent.Service;
@@ -57,13 +56,6 @@ public class SearchAction extends PapaAction {
 				}
 			}
 		}
-//		if (regExLine != null) {
-//			argList.add(regExLine);
-//			System.out.println("regex: " + regExLine);
-//		}
-		//		Thread t = new Thread(new SearchThread(argList.toArray(new String[argList.size()])));
-		//		threadPool.add(t);
-		//		t.start();
 		task = new SearchTask(argList.toArray(new String[argList.size()]));
 		taskPool.add(task);
 		setService(new SearchService());
@@ -76,27 +68,6 @@ public class SearchAction extends PapaAction {
 		});
 		service.start();
 	}
-
-	//	public class SearchThread implements Runnable {
-	//
-	//		String[] argArr;
-	//
-	//		public SearchThread(String[] argArr) {
-	//			this.argArr = argArr;
-	//		}
-	//
-	//		@Override
-	//		public void run() {
-	//			MainSearcher.setStop(false);
-	//			MainSearcher mainSearcher = MainSearcher.getSingleton(argArr);
-	//			mainSearcher.activate(argArr);
-	//			threadPool.remove(this);
-	//		}	
-	//	}
-	//	
-	//	public static List<Thread> getThreadPool() {
-	//		return threadPool;
-	//	}
 
 	public class SearchTask extends Task<Void> {
 
