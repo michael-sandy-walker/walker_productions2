@@ -40,6 +40,7 @@ import utilities.command.LogCommand;
 import utilities.command.MaxSearchCommand;
 import utilities.command.PageCommand;
 import utilities.command.ParseImmediateCommand;
+import utilities.command.RegExCommand;
 import utilities.command.TokenCommand;
 import utilities.command.VisitedLinkCommand;
 import view.HabitabberGUI;
@@ -50,9 +51,15 @@ public class MainSearcher {
 
 	private List<Token> tokenList = new ArrayList<Token>();
 
-	public final static Pattern p1 = Pattern.compile(".*(((0)[1-9]{2}[0-9][-]?(\\s?)[1-9][0-9]{5})|((\\+31|0|0031)[1-9][0-9][-]?[1-9][0-9]{6})).*");
-	public final static Pattern p2 = Pattern.compile(".*(((\\+31|0|0031)6){1}[1-9]{1}[0-9]{7}).*", Pattern.CASE_INSENSITIVE);
-	public final static Pattern p3 = Pattern.compile(".*(((0)[1-9][-]?\\s?[1-9][0-9]{2}\\s?[0-9]{5})).*");
+	public final static List<Pattern> patternList = new ArrayList<Pattern>();
+	static {
+		patternList.add(Pattern.compile(".*(((0)[1-9]{2}[0-9][-]?(\\s?)[1-9][0-9]{5})|((\\+31|0|0031)[1-9][0-9][-]?[1-9][0-9]{6})).*"));
+		patternList.add(Pattern.compile(".*(((\\+31|0|0031)6){1}[1-9]{1}[0-9]{7}).*", Pattern.CASE_INSENSITIVE));
+		patternList.add(Pattern.compile(".*(((0)[1-9][-]?\\s?[1-9][0-9]{2}\\s?[0-9]{5})).*"));
+	}
+//	public final static Pattern p1 = Pattern.compile(".*(((0)[1-9]{2}[0-9][-]?(\\s?)[1-9][0-9]{5})|((\\+31|0|0031)[1-9][0-9][-]?[1-9][0-9]{6})).*");
+//	public final static Pattern p2 = Pattern.compile(".*(((\\+31|0|0031)6){1}[1-9]{1}[0-9]{7}).*", Pattern.CASE_INSENSITIVE);
+//	public final static Pattern p3 = Pattern.compile(".*(((0)[1-9][-]?\\s?[1-9][0-9]{2}\\s?[0-9]{5})).*");
 
 	public static int MAX_SITES = 1000;
 	public static int counter = 0;
@@ -113,7 +120,6 @@ public class MainSearcher {
 
 	public void activate(String[] argv) {
 		try {
-
 			if (argv != null && argv.length > 0) {
 				/**
 				 * Begin setup
@@ -169,6 +175,11 @@ public class MainSearcher {
 
 					if (cmd instanceof PageCommand && cmd.getValue() != null && !cmd.getValue().isEmpty()) {
 						pageArr = cmd.getValue().split(Command.DELIMITER);
+					} else if (cmd instanceof RegExCommand && cmd.getValue() != null && !cmd.getValue().isEmpty()) {
+						for (String cmdSplitlet : cmd.getValue().split(Command.DELIMITER)) {
+							patternList.add(Pattern.compile(cmdSplitlet));
+						}
+					
 					}
 				}
 			}			
@@ -430,21 +441,21 @@ public class MainSearcher {
 					if (node instanceof TextNode) {
 						String text = ((TextNode)node).text();
 
-						Matcher m1 = p1.matcher(text);	
-						Matcher m2 = p2.matcher(text);
-						Matcher m3 = p3.matcher(text);
-						if (m1.matches() || m2.matches() || m3.matches()) {
-							logger.fine(text);		
-							if (doImmediateParse) {
-								String str = "Found: " + page.getUrl() + " , Tel: " + text;
-								//								System.out.println(str);
-								//								io.write(str + "\n", true);
-								//								HabitabberGUI.appendOutputText(str + "\n");
-								//								io.write(page.getUrl(), true);
-								outputText(str + "\n");				
+						for (Pattern p : patternList) {
+							Matcher m = p.matcher(text);
+							if (m.matches()) {
+								logger.fine(text);		
+								if (doImmediateParse) {
+									String str = "Found: " + page.getUrl() + " , Tel: " + text;
+									//								System.out.println(str);
+									//								io.write(str + "\n", true);
+									//								HabitabberGUI.appendOutputText(str + "\n");
+									//								io.write(page.getUrl(), true);
+									outputText(str + "\n");				
+								}
+								page.setContent("tel", text);
 							}
-							page.setContent("tel", text);
-						}
+						}						
 					}
 				}
 			}

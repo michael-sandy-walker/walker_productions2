@@ -1,7 +1,7 @@
 package view.field;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import javafx.scene.control.TextField;
 
@@ -9,7 +9,7 @@ public class PapaField {
 	private TextField textField;
 	private String name;
 	
-	private static 	List<PapaField> fieldList = new ArrayList<PapaField>();
+	private static 	Map<String, PapaField> fieldMap = new TreeMap<String, PapaField>();
 	
 	public PapaField(String name) {
 		this(name, "");
@@ -18,7 +18,8 @@ public class PapaField {
 	public PapaField(String name, String text) {
 		setTextField(new TextField(text));
 		setName(name);
-		fieldList.add(this);
+//		fieldList.add(this);
+		fieldMap.put(name, this);
 	}
 
 	/**
@@ -49,7 +50,7 @@ public class PapaField {
 		this.name = name;
 	}
 	
-	public static List<PapaField> getFieldList() {
-		return fieldList;
+	public static Map<String, PapaField> getFieldMap() {
+		return fieldMap;
 	}
 }

@@ -10,6 +10,7 @@ public class CommandFactory {
 		ParseImmediateCommand.registerCommand(ParseImmediateCommand.class.getSimpleName());
 		TokenCommand.registerCommand(TokenCommand.class.getSimpleName());
 		ConcatenatedTokenCommand.registerCommand(ConcatenatedTokenCommand.class.getSimpleName());
+		RegExCommand.registerCommand(RegExCommand.class.getSimpleName());
 	}
 	
 	public static String getCommandParamByClassName(String className) {
@@ -28,6 +29,8 @@ public class CommandFactory {
 			result = "v";
 		} else if (className.equals(ConcatenatedTokenCommand.class.getSimpleName())) {
 			result = "c";
+		} else if (className.equals(RegExCommand.class.getSimpleName())) {
+			result = "r";
 		}
 		return result;
 	}
@@ -48,6 +51,8 @@ public class CommandFactory {
 			result = "Link file";
 		} else if (className.equals(ConcatenatedTokenCommand.class.getSimpleName())) {
 			result = "Conjunction(s)";
+		} else if (className.equals(RegExCommand.class.getSimpleName())) {
+			result = "Regex";
 		}
 		return result;
 	}
@@ -68,6 +73,8 @@ public class CommandFactory {
 			result = VisitedLinkCommand.class.getSimpleName();
 		} else if (commandParam.equals("c")) {
 			result = ConcatenatedTokenCommand.class.getSimpleName();
+		} else if (commandParam.equals("r")) {
+			result = RegExCommand.class.getSimpleName();
 		}
 		return result;
 	}
@@ -89,6 +96,8 @@ public class CommandFactory {
 			result = new VisitedLinkCommand(name, value);
 		} else if (name.equals("c")) {
 			result = new ConcatenatedTokenCommand(name, value);
+		} else if (name.equals("r")) {
+			result = new RegExCommand(name, value);
 		}
 		
 		return result;

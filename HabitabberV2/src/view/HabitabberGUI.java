@@ -1,15 +1,19 @@
 package view;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import controller.MainSearcher;
 import utilities.command.Command;
 import utilities.command.CommandFactory;
+import view.button.AddRegExButton;
 import view.button.PapaButton;
 import view.button.SearchButton;
 import view.button.StopButton;
 import view.field.PapaField;
 import view.field.ParseImmediateField;
+import view.field.RegExField;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -37,6 +41,8 @@ public class HabitabberGUI extends Application {
 	private static final TextArea outputTextArea = new TextArea();
 
 	private static Stage stage;
+	
+	private static int hIndex = 2;
 	
 	/**
 	 * Only for test reasons.
@@ -128,7 +134,7 @@ public class HabitabberGUI extends Application {
 		stopButton.getButton().setGraphic(new ImageView(stopIcon));
 		
 		getOutputtextarea().setPrefHeight(600);
-		grid.add(getOutputtextarea(), 2, 2, 3, 10);
+		grid.add(getOutputtextarea(), 2, 2, 3, 18);
 		
 		ColumnConstraints col1Constraints = new ColumnConstraints();
 		col1Constraints.setPercentWidth(120);
@@ -144,9 +150,9 @@ public class HabitabberGUI extends Application {
 		grid.getColumnConstraints().addAll(col1Constraints, col2Constraints, col3Constraints, col4Constraints, col5Constraints);
 
 		//Add input fields and fill SearchAction with it
-		int hIndex = 2;
+		hIndex = 2;
 		for (String cmd : Command.getRegisteredCommands()) {
-			if (!cmd.equals("PageCommand")) {
+			if (!cmd.equals("PageCommand") && !cmd.equals("RegExCommand")) {
 				Label label = new Label(CommandFactory.getCommandAbbreviationByClassName(cmd));
 				label.setTextFill(Color.web("0076a3"));
 				grid.add(label, 0, hIndex);
@@ -165,6 +171,7 @@ public class HabitabberGUI extends Application {
 				hIndex++;
 			}
 		}
+		grid.add(new AddRegExButton(this, grid).getButton(), 0, hIndex++);
 	}
 	
 	public static void appendOutputText(String str) {
@@ -178,5 +185,15 @@ public class HabitabberGUI extends Application {
 	 */
 	public static TextArea getOutputtextarea() {
 		return outputTextArea;
+	}
+	
+	List<RegExField> regExFieldList = new ArrayList<RegExField>();
+	
+	public void addRegExField(GridPane grid, String regEx) {
+		RegExField regExField = new RegExField("-r" + regExFieldList.size(), regEx);
+		regExFieldList.add(regExField);
+		grid.add(new Label("Regex " + regExFieldList.size()), 0, hIndex);
+		grid.add(regExField.getTextField(), 1, hIndex);
+		hIndex++;
 	}
 }
