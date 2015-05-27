@@ -202,7 +202,7 @@ public class HabitabberGUI extends Application {
 		String name = "" + firstFreeHIndex;
 		RegExField regExField = new RegExField(name, regEx);
 //		regExFieldList.add(regExField);
-		Label label = new Label("Regex " + firstFreeHIndex);		
+		Label label = new Label("Regex " + (firstFreeHIndex - getHIndexOffset()));		
 		grid.add(label, 0, firstFreeHIndex);
 		grid.add(regExField.getTextField(), 1, firstFreeHIndex);
 		
