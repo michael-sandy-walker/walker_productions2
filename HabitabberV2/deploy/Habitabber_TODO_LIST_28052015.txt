@@ -1,0 +1,14 @@
+Todo:
+Toevoegen van HTML view (for link-clicking)
+After-editing (further filter, remove doubles - key/val, "remove entry"-button)
+Image(s)
+Divide mobile numbers and description (show more text)
+Add default regex(es)
+Functionality to save/load regex template(s)
+Conjunctions/Disjunctions for regexes
+Sort mechanism of results
+
+Multitasking:
+Add progress bar for search(es)
+Add viewer for multiple searches (incl. progress bars)
+Merge results of multiple searches
