@@ -31,19 +31,22 @@ public class SearchAction extends PapaAction {
 			if (field instanceof ParseImmediateField){  
 				if (((ParseImmediateField)field).getCheckbox().isSelected()) {
 					argList.add(field.getName());
-					argList.add("v");
+					argList.add("y");
+				} else {
+					argList.add(field.getName());
+					argList.add("n");
 				}
 			} else if (!(field instanceof RegExField)) {
 				if (field.getTextField() != null) {				
 					String value = field.getTextField().getText();
-					if (value != null) { 
+					if (value != null && !value.isEmpty()) { 
 						argList.add(field.getName()); // The command
 						for (String v : value.split(" ")) // The value(s)
 							argList.add(v);
 					}
 				} 
-			} else { // RegEx
-				if (field.getTextField() != null) {
+			} else { // RegEx			
+				if (field.getTextField() != null) {					
 					String value = field.getTextField().getText();
 					if (value != null && !value.isEmpty()) {
 						if (regExLine == null) {

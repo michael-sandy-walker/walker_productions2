@@ -8,8 +8,18 @@ public class ParseImmediateField extends PapaField {
 	private CheckBox checkbox;
 	
 	public ParseImmediateField(String name) {
-		super(name);
-		setCheckbox(new CheckBox());
+		this(name, "");
+	}
+	
+	public ParseImmediateField(String name, String value) {
+		super(name, value);
+		CheckBox checkBox = new CheckBox();;
+		if (value != null && !value.isEmpty())
+			checkBox.setSelected(value.substring(0,1).toLowerCase().equals("y"));
+		else {
+			checkBox.setSelected(true);
+		}
+		setCheckbox(checkBox);
 	}
 	
 	/**

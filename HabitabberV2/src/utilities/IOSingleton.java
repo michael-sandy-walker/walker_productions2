@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.sun.media.jfxmedia.logging.Logger;
+
 /**
  * Singleton class for the IO in order to make this project extendable for Multithreading (e.g., by a Semaphore)
  * and to provide better maintenance conditions.
@@ -97,7 +99,7 @@ public class IOSingleton {
 			}
 		}
 	}
-	
+
 	public void reset(boolean retrieveOldSession) {
 		readFileName = "file.txt";
 		writerFileName = "file.txt";
@@ -107,7 +109,7 @@ public class IOSingleton {
 		if (bw != null) {
 			bw.flush();
 			bw.close();
-			
+
 		} 
 		if (br != null) {
 			try {
@@ -221,17 +223,17 @@ public class IOSingleton {
 	 * Reads a line of the file "testdata.csv".
 	 * @return String
 	 */
-	public String readLine() {
+	public String readLine() {		
 		String result = null;
-		try {
-			if (br.ready()) {
+		try {			
+			if (br.ready()) {				
 				result = br.readLine();
 				//				attributeIterator = Arrays.asList(result.split(Command.DELIMITER)).iterator();				
-			}
+			} 			
 		} catch (IOException e) {
 			//			e.printStackTrace();			
-			try {
-				br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(getReadFileName()))));
+			try {				
+				br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(getReadFileName()))));				
 				if (br.ready()) {
 					result = br.readLine();
 				}
@@ -268,11 +270,32 @@ public class IOSingleton {
 		}
 	}
 
+	public void initializeReader() {
+		try {
+			br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(getReadFileName()))));
+		} catch (IOException e) {
+			System.out.println("Could not initialize the reader.");
+			e.printStackTrace();
+		}
+	}
+
+	public void initializeWriter() {
+		try {
+			bw = new PrintWriter(new BufferedWriter(new FileWriter(writerFileName, false)));
+		} catch (IOException e) {
+			System.out.println("Could not initialize the writer.");
+			e.printStackTrace();
+		}
+	}
+
 	public String getReadFileName() {
 		return readFileName;
 	}
 
 	public void setReadFileName(String readFileName) {
+		if (br != null && this.readFileName != null && !this.readFileName.equals(readFileName)) {
+			initializeReader();
+		}
 		this.readFileName = readFileName;
 	}
 
@@ -282,11 +305,7 @@ public class IOSingleton {
 
 	public void setWriterFileName(String writerFileName) {
 		if (bw != null && this.writerFileName != null && !this.writerFileName.equals(writerFileName)) {
-			try {
-				bw = new PrintWriter(new BufferedWriter(new FileWriter(writerFileName, false)));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			initializeWriter();
 		}
 		this.writerFileName = writerFileName;
 	}

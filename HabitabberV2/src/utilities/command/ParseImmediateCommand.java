@@ -6,7 +6,11 @@ public class ParseImmediateCommand extends Command {
 	
 	public ParseImmediateCommand(String name, String value) {
 		super(name, value);
-		parseImmediate = true;
+		if (value != null) {
+			parseImmediate = value.toLowerCase().equals("y");
+		} else {
+			parseImmediate = true;
+		}
 	}
 	
 	public static boolean isParseImmediate() {

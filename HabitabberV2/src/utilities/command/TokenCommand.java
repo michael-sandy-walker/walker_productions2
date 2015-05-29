@@ -7,7 +7,7 @@ import utilities.Token;
 
 public class TokenCommand extends Command {
 	
-	private static List<Token> tokenList = null;
+	private static List<Token> tokenList = new ArrayList<Token>();
 
 	public TokenCommand(String name, String value) {
 		super(name, value);

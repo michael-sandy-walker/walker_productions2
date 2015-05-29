@@ -235,7 +235,7 @@ public class MainSearcher {
 		boolean firstParam = true;
 
 		while (argvIter.hasNext()) {			
-			String cmd = (String) argvIter.next();			
+			String cmd = (String) argvIter.next();						
 			logger.finest("cmd: " + cmd);
 			String value = null;
 			if (cmd.startsWith("-")) {
@@ -325,7 +325,7 @@ public class MainSearcher {
 			addLinksToPage(page);
 			// 3.) iterate through current tree level 
 			for (SubPage subPage : page.getSubPageList()) {
-
+				logger.finest("subPage: " + subPage.getUrl());
 				// 4.) if link of current node is not within visitedList
 				if (!visitedLinkList.contains(subPage.getUrl()) && counter < MAX_SITES && !isStop()) {
 					counter++;					
@@ -358,7 +358,7 @@ public class MainSearcher {
 			}
 
 			// recursive call
-			List<SubPage> subPageList = page.getSubPageList();
+			List<SubPage> subPageList = page.getSubPageList();			
 			for (SubPage subPage : subPageList) {		
 				searchTree(subPage);
 			}
@@ -398,21 +398,27 @@ public class MainSearcher {
 			String linkStr = link.attr("abs:href");			
 
 			boolean containsStr = false;
-			if (TokenCommand.getTokenList() == null || TokenCommand.getTokenList().isEmpty() 
+			if ((TokenCommand.getTokenList() == null || TokenCommand.getTokenList().isEmpty()) 
 					&& (ConcatenatedTokenCommand.getTokenList() == null || ConcatenatedTokenCommand.getTokenList().isEmpty())) {
 				containsStr = true;
-			} else {				
-				for (Token token : TokenCommand.getTokenList()) {
-					if (!linkStr.isEmpty() && linkStr.contains(token.getContent())) {
-						containsStr = true;
-						break;
-					}
-				}
+			} else {								
+				if (TokenCommand.getTokenList() != null) {
+					for (Token token : TokenCommand.getTokenList()) {					
+						if (!linkStr.isEmpty() && linkStr.contains(token.getContent())) {
+							containsStr = true;
+							break;
+						}
+					}										
+				}				
+				boolean containsStrTmp = true;
 				for (Token token : ConcatenatedTokenCommand.getTokenList()) {
 					if (linkStr.isEmpty() || !linkStr.contains(token.getContent())) {						
-						containsStr = false;
+						containsStrTmp = false;
 						break;
 					}
+				}	
+				if (!ConcatenatedTokenCommand.getTokenList().isEmpty() && containsStrTmp) {
+					containsStr = containsStrTmp;
 				}
 			}
 			if (containsStr) {				
@@ -425,6 +431,10 @@ public class MainSearcher {
 	}
 
 	public void parseContent(MainPage page) {
+		// If we don't parse immediately, retrieve the content of the link
+		if (!doImmediateParse && (page instanceof SubPage)) {			
+			page = retrievePage(page.getUrl(), true);
+		}
 		// Parse the content and stuff it into Site.
 		String unparsedContent = page.getUnparsedContent();
 		if (unparsedContent != null && !unparsedContent.isEmpty()) {
@@ -438,29 +448,31 @@ public class MainSearcher {
 					page.setContent("media", medium.attr("abs:src"));			
 			}
 
-			for (Element elem : doc.getAllElements()) {
-				for (Node node : elem.childNodes()) {
-					if (node instanceof TextNode) {
-						String text = ((TextNode)node).text();
+			search:
+				for (Element elem : doc.getAllElements()) {
+					for (Node node : elem.childNodes()) {
+						if (node instanceof TextNode) {
+							String text = ((TextNode)node).text();
 
-						for (Pattern p : patternList) {
-							Matcher m = p.matcher(text);
-							if (m.matches()) {
-								logger.fine(text);		
-								if (doImmediateParse) {
-									String str = "Found: " + page.getUrl() + " , Tel: " + text;
-									//								System.out.println(str);
-									//								io.write(str + "\n", true);
-									//								HabitabberGUI.appendOutputText(str + "\n");
-									//								io.write(page.getUrl(), true);
-									outputText(str + "\n");				
-								}
-								page.setContent("tel", text);
-							}
-						}						
+							for (Pattern p : patternList) {
+								Matcher m = p.matcher(text);
+								if (m.matches()) {
+									logger.fine(text);		
+//									if (doImmediateParse) {
+										String str = "Found: " + page.getUrl() + " , Tel: " + text;
+										//								System.out.println(str);
+										//								io.write(str + "\n", true);
+										//								HabitabberGUI.appendOutputText(str + "\n");
+										//								io.write(page.getUrl(), true);
+										outputText(str + "\n");
+										break search;
+									}
+									page.setContent("tel", text);
+//								}
+							}						
+						}
 					}
 				}
-			}
 		}
 	}
 
