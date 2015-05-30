@@ -26,7 +26,7 @@ import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
-import result.MainPage;
+import result.Page;
 import result.PageFactory;
 import result.SubPage;
 import utilities.IOSingleton;
@@ -140,7 +140,7 @@ public class MainSearcher {
 				/**
 				 * Begin with the tree generation (and the search) 
 				 */				
-				MainPage page = generateTree(pageArr);			
+				Page page = generateTree(pageArr);			
 				if (page != null && !doImmediateParse) {
 					searchTree(page);
 				}			
@@ -278,8 +278,8 @@ public class MainSearcher {
 
 
 
-	public MainPage generateTree(String... argv) {		
-		MainPage result = null;
+	public Page generateTree(String... argv) {		
+		Page result = null;
 		for (String str : argv) {			
 			counter = 0;
 			UrlToken token = new UrlToken(str);
@@ -289,7 +289,7 @@ public class MainSearcher {
 		return result;
 	}
 
-	public MainPage performSearch(UrlToken token) {
+	public Page performSearch(UrlToken token) {
 		if (!isStop()) {
 			return performSearch(token, false);
 		} else {
@@ -297,7 +297,7 @@ public class MainSearcher {
 		}
 	}
 
-	public MainPage performSearch(UrlToken token, boolean isSubPage) {		
+	public Page performSearch(UrlToken token, boolean isSubPage) {		
 		try {
 			Thread.sleep(1);
 		} catch (InterruptedException e1) {
@@ -316,7 +316,7 @@ public class MainSearcher {
 
 		logger.fine("token: " + token.getUrl());
 		// 1.) retrieve page (first page = root)
-		MainPage page = retrievePage(token.getUrl(), isSubPage);
+		Page page = retrievePage(token.getUrl(), isSubPage);
 		// 2.) add links of page to tree (children of current node) incl. content
 		if (page != null) {			
 			if (doImmediateParse)
@@ -342,7 +342,7 @@ public class MainSearcher {
 		return page;
 	}
 
-	public void searchTree(MainPage page) {
+	public void searchTree(Page page) {
 		if (!isStop()) {
 			parseContent(page);
 
@@ -365,12 +365,12 @@ public class MainSearcher {
 		}
 	}
 
-	public MainPage retrievePage(String url) {
+	public Page retrievePage(String url) {
 		return retrievePage(url, false);
 	}
 
-	public MainPage retrievePage(String url, boolean subPage) {	
-		MainPage result = new MainPage();
+	public Page retrievePage(String url, boolean subPage) {	
+		Page result = new Page();
 		try {
 			String content = "";
 			if (url != null && !url.isEmpty()) {
@@ -390,7 +390,7 @@ public class MainSearcher {
 		return result;
 	}
 
-	public void addLinksToPage(MainPage page) {
+	public void addLinksToPage(Page page) {
 		// Parse the content and stuff it into Site.
 		Document doc = Jsoup.parse(page.getUnparsedContent());		
 		Elements links = doc.select("a[href]");				
@@ -430,7 +430,7 @@ public class MainSearcher {
 		}
 	}
 
-	public void parseContent(MainPage page) {
+	public void parseContent(Page page) {
 		// If we don't parse immediately, retrieve the content of the link
 		if (!doImmediateParse && (page instanceof SubPage)) {			
 			page = retrievePage(page.getUrl(), true);
@@ -440,12 +440,19 @@ public class MainSearcher {
 		if (unparsedContent != null && !unparsedContent.isEmpty()) {
 			Document doc = Jsoup.parse(unparsedContent);	
 			Elements media = doc.select("[src]");
+			Elements description = doc.select("div.l-body-content");
 
-			logger.finest(doc.toString());
+			logger.finest(doc.toString());						
 
 			for (Element medium : media) {
 				if (medium.tagName().equals("img"))
 					page.setContent("media", medium.attr("abs:src"));			
+			}
+			
+			for (Element desc : description) {
+				if (description.text() != null && !description.text().isEmpty()) {
+					page.setDescription(desc);
+				}
 			}
 
 			search:
@@ -458,17 +465,16 @@ public class MainSearcher {
 								Matcher m = p.matcher(text);
 								if (m.matches()) {
 									logger.fine(text);		
-//									if (doImmediateParse) {
 										String str = "Found: " + page.getUrl() + " , Tel: " + text;
 										//								System.out.println(str);
 										//								io.write(str + "\n", true);
 										//								HabitabberGUI.appendOutputText(str + "\n");
 										//								io.write(page.getUrl(), true);
+										page.setContent("tel", text);
 										outputText(str + "\n");
-										break search;
-									}
-									page.setContent("tel", text);
-//								}
+										setPage(page);
+										break search;									
+								}								
 							}						
 						}
 					}
@@ -520,5 +526,16 @@ public class MainSearcher {
 			});		
 		}
 		System.out.println(str);
+	}
+	
+	public void setPage(Page page) {	
+		if (!inMain) {
+			Platform.runLater(new Runnable() {
+				@Override
+				public void run() {
+					HabitabberGUI.setPage(page);                             
+				}
+			});		
+		}
 	}
 }

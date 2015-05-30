@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class MainPage {
+import org.jsoup.nodes.Element;
+
+public class Page {
 
 	protected Map<String, List<Object>> content = new TreeMap<String, List<Object>>();
 
@@ -14,12 +16,14 @@ public class MainPage {
 	protected String url;
 	
 	protected List<SubPage> subPageList = new ArrayList<SubPage>();
+	
+	private Element description;
 
-	public MainPage() {
+	public Page() {
 		unparsedContent = "";
 	}
 
-	public MainPage(String unparsedContent) {
+	public Page(String unparsedContent) {
 		this.unparsedContent = unparsedContent;
 	}
 
@@ -71,6 +75,14 @@ public class MainPage {
 	
 	public void setSubPageList(List<SubPage> subPageList) {
 		this.subPageList = subPageList;
+	}
+	
+	public Element getDescription() {
+		return description;
+	}
+
+	public void setDescription(Element description) {
+		this.description = description;
 	}
 
 }

@@ -1,6 +1,6 @@
 package result;
 
-public class SubPage extends MainPage {
+public class SubPage extends Page {
 	public SubPage() {
 		super();
 	}

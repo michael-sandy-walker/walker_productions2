@@ -1,12 +1,12 @@
 package result;
 
 public class PageFactory {
-	public static MainPage getPage(String content, boolean subPage) {
-		MainPage result;
+	public static Page getPage(String content, boolean subPage) {
+		Page result;
 		if (subPage)
 			result = new SubPage(content);
 		else 
-			result = new MainPage(content);
+			result = new Page(content);
 		return result;
 	}
 }
