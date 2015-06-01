@@ -1,5 +1,6 @@
 package view.button;
 
+import view.HabitabberGUI;
 import view.action.PapaAction;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -10,11 +11,11 @@ public class PapaButton {
 	Button button;
 	private PapaAction action;
 	
-	public PapaButton(String name) {
-		this(name, new PapaAction());
+	public PapaButton(HabitabberGUI gui, String name) {
+		this(name, new PapaAction(gui));
 	}
 	
-	public PapaButton(String name, PapaAction action) {
+	public PapaButton(String name, PapaAction action) {		
 		this.setAction(action);
 		button = new Button(name);
 		button.setOnAction(new EventHandler<ActionEvent>() {

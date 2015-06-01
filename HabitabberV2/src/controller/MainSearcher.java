@@ -47,6 +47,8 @@ import view.HabitabberGUI;
 
 public class MainSearcher {
 
+	private HabitabberGUI gui;
+	
 	WebFile webFile;
 
 	private List<Token> tokenList = new ArrayList<Token>();
@@ -107,13 +109,18 @@ public class MainSearcher {
 		//set the console handler to fine:
 		consoleHandler.setLevel(java.util.logging.Level.FINEST);
 	}
-
-	private MainSearcher(String[] argv) {				
+	
+	private MainSearcher(String[] argv) { 
+		this(null, argv);
 	}
 
-	public static MainSearcher getSingleton(String[] argv) {
+	private MainSearcher(HabitabberGUI gui, String[] argv) {
+		this.gui = gui;
+	}
+
+	public static MainSearcher getSingleton(HabitabberGUI gui, String[] argv) {
 		if (MainSearcher.singleton == null) {
-			MainSearcher.singleton = new MainSearcher(argv);
+			MainSearcher.singleton = new MainSearcher(gui, argv);
 		}	
 		return singleton;
 	}
@@ -452,6 +459,7 @@ public class MainSearcher {
 			for (Element desc : description) {
 				if (description.text() != null && !description.text().isEmpty()) {
 					page.setDescription(desc);
+					page.setContent("description", desc);
 				}
 			}
 
@@ -521,7 +529,7 @@ public class MainSearcher {
 			Platform.runLater(new Runnable() {
 				@Override
 				public void run() {
-					HabitabberGUI.appendOutputText(str);                                
+					gui.appendOutputText(str);                                
 				}
 			});		
 		}
@@ -533,9 +541,19 @@ public class MainSearcher {
 			Platform.runLater(new Runnable() {
 				@Override
 				public void run() {
-					HabitabberGUI.setPage(page);                             
+					gui.setPage(page);                             
 				}
 			});		
 		}
 	}
+
+	public HabitabberGUI getGui() {
+		return gui;
+	}
+
+	public void setGui(HabitabberGUI gui) {
+		this.gui = gui;
+	}
+	
+	
 }

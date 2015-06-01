@@ -1,6 +1,7 @@
 package view.action;
 
 import result.Page;
+import view.HabitabberGUI;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -16,7 +17,8 @@ public class PopupAction extends PapaAction {
 	Page page;
 	String name;
 	
-	public PopupAction(String name, Page page) {
+	public PopupAction(HabitabberGUI gui, String name, Page page) {
+		super(gui);
 		this.page = page;
 		this.name = name;
 	}

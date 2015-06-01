@@ -1,21 +1,37 @@
-2015/05/30 17:49:39 - HabitabberV2 initialized.
-Found: http://www.marktplaats.nl/z/huizen-en-kamers/amsterdam.html?query=amsterdam&categoryId=1032 , Tel:  en gestoffeerd €1300 voor meer info bel 0614988499 
-Found: http://www.marktplaats.nl/z/huizen-en-kamers/amsterdam-direct-bij-eigenaar.html?query=amsterdam+direct+bij+eigenaar&categoryId=1032 , Tel:  en gestoffeerd €1300 voor meer info bel 0614988499 
-Found: http://www.marktplaats.nl/z/huizen-en-kamers/huizen-te-huur/amsterdam-direct-bij-eigenaar.html?query=amsterdam+direct+bij+eigenaar&categoryId=2143 , Tel:  en gestoffeerd €1300 voor meer info bel 0614988499 
-2015/05/30 17:49:43 - HabitabberV2 terminated.
-2015/05/30 17:49:46 - HabitabberV2 terminated.
-2015/05/30 17:49:47 - HabitabberV2 initialized.
-Found: http://www.marktplaats.nl/z/huizen-en-kamers/huizen-te-huur.html?categoryId=2143 , Tel:  en gestoffeerd €1300 voor meer info bel 0614988499 
-Found: http://www.marktplaats.nl/z/huizen-en-kamers/huizen-te-huur/amsterdam.html?query=amsterdam&categoryId=2143 , Tel:  en gestoffeerd €1300 voor meer info bel 0614988499 
-Found: http://www.marktplaats.nl/z/huizen-en-kamers/huizen-te-huur/apartement.html?query=apartement&categoryId=2143 , Tel:  mogelijk! Prijs is 825 euro incl. Verwarming, warme water internet/tv. Tel: 0624610314. Max 2 personen. Het betreft een prachtig 2-kamerappartement in het centrum van den… 
-Found: http://www.marktplaats.nl/z/huizen-en-kamers/huizen-te-huur/woning-te-huur.html?query=woning+te+huur&categoryId=2143 , Tel:  en gestoffeerd €1300 voor meer info bel 0614988499 
+2015/06/01 21:52:13 - HabitabberV2 initialized.
+Found: http://www.marktplaats.nl/z/huizen-en-kamers/amsterdam.html?query=amsterdam&categoryId=1032 , Tel: BEL 020-2089979 voor een vrijblijvende offerte of advies !!!
+Found: http://www.marktplaats.nl/z/huizen-en-kamers/amsterdam-direct-bij-eigenaar.html?query=amsterdam+direct+bij+eigenaar&categoryId=1032 , Tel: appartement A'dam Iepenplein te huur(06-53252930)
+Found: http://www.marktplaats.nl/z/huizen-en-kamers/huizen-te-huur/amsterdam-direct-bij-eigenaar.html?query=amsterdam+direct+bij+eigenaar&categoryId=2143 , Tel: appartement A'dam Iepenplein te huur(06-53252930)
+2015/06/01 21:52:16 - HabitabberV2 terminated.
+2015/06/01 21:52:26 - HabitabberV2 initialized.
+Found: http://www.marktplaats.nl/z/huizen-en-kamers/huizen-te-huur/amsterdam.html?query=amsterdam&categoryId=2143 , Tel: Beste huis eigenaar, u wilt wel de lusten maar niet de lasten van uw onroerend goed? Bel dan het volgende nummer: 06-17094330 wij verzorgen:
+Found: http://www.marktplaats.nl/z/huizen-en-kamers/huizen-te-huur/apartement.html?query=apartement&categoryId=2143 , Tel:  zoeken. Voor u als verhuurder zijn er geen kosten en de voorwaarden bepaald u zelf. Voor meer informatie kunt u bellen met tel nr: 0646118869 
+Found: http://www.marktplaats.nl/z/huizen-en-kamers/huizen-te-huur/woning-te-huur.html?query=woning+te+huur&categoryId=2143 , Tel:  zich in een woonvergunningsgebied. Gelieve alleen te reageren indien u een vast werkinkomen heeft. Bij interesse bellen naar 06-53192574 dhr. R. Van gurp 
 Found: http://www.marktplaats.nl/z/huizen-en-kamers/huizen-te-huur/woning-te-huur-nijmegen.html?query=woning+te+huur+nijmegen&categoryId=2143 , Tel: Geheel gemeubileerde vrijstaande chalets. Diverse uitvoeringen. Ruime parkeerruimte voor de deur. Voor meer info even bellen naar 06-17318591
 Found: http://www.marktplaats.nl/z/huizen-en-kamers/woning-te-huur-nijmegen.html?query=woning+te+huur+nijmegen&categoryId=1032 , Tel: Geheel gemeubileerde vrijstaande chalets. Diverse uitvoeringen. Ruime parkeerruimte voor de deur. Voor meer info even bellen naar 06-17318591
-Found: http://www.marktplaats.nl/z/huizen-en-kamers/kamers-te-huur.html?categoryId=2771 , Tel:  dan voor meer info: 0612397272 leersum foto 7 t/m 15 is leersum prijs 450,- inclusief gas, water licht, tv aansluiting en wifi graag bellen en niet mailen 06-12397272 
-Found: http://www.marktplaats.nl/z/huizen-en-kamers/kamers-te-huur/amsterdam.html?query=amsterdam&categoryId=2771 , Tel: Gezocht studio of kleine apartment in amsterdam of omgeving 0685582822
-Found: http://www.marktplaats.nl/z/huizen-en-kamers/kamers-te-huur/rotterdam.html?query=rotterdam&categoryId=2771 , Tel:  dus geen adres voor verdere vragen bel gerust 0641908861 
-2015/05/30 17:49:52 - HabitabberV2 terminated.
-2015/05/30 17:49:53 - HabitabberV2 terminated.
-2015/05/30 17:49:54 - HabitabberV2 initialized.
-2015/05/30 17:49:55 - HabitabberV2 initialized.
-2015/05/30 17:49:59 - HabitabberV2 terminated.
+Found: http://www.marktplaats.nl/z/huizen-en-kamers/kamers-te-huur.html?categoryId=2771 , Tel:  op de dreef richting haarlem en schiphol. Prijs is nader overeen te komen. Inclusief, gas, water elektra en internet. Voor meer informatie kunt u bellen met 0622706031 b.g.g. Na… 
+Found: http://www.marktplaats.nl/z/huizen-en-kamers/kamers-te-huur/amsterdam.html?query=amsterdam&categoryId=2771 , Tel: Vlakbij amsterdam sloterdijk voor interesse of vragen kunt u contact opnemen met: 0654300453
+Found: http://www.marktplaats.nl/z/huizen-en-kamers/kamers-te-huur/rotterdam.html?query=rotterdam&categoryId=2771 , Tel:  425,- per maand. Geen huisdieren en niet rokend. Info 0637562158 / 0651602850 
+Found: http://www.marktplaats.nl/z/huizen-en-kamers/kamers-te-huur/rotterdam-studio.html?query=rotterdam+studio&categoryId=2771 , Tel:  botlek, schiedam, rozenburg en brielle. Bel voor de mogelijkheden 0617435685. Gratis parkeren (openbaar), gratis wifi, gratis digitale tv. Bad/bedlinnen inbegrepen.… 
+Found: http://www.marktplaats.nl/z/huizen-en-kamers/rotterdam-studio.html?query=rotterdam+studio&categoryId=1032 , Tel:  erg goed gelegen t.o.v. Openbaar vervoer voor bezichtigingen kan u bellen naar: 06-20639077 / 06-11767104 of schrijf je gratis in op: www.woning-aangeboden.nl 
+Found: http://www.marktplaats.nl/z/huizen-en-kamers/huizen-te-huur/rotterdam-studio.html?query=rotterdam+studio&categoryId=2143 , Tel:  erg goed gelegen t.o.v. Openbaar vervoer voor bezichtigingen kan u bellen naar: 06-20639077 / 06-11767104 of schrijf je gratis in op: www.woning-aangeboden.nl 
+Found: http://www.marktplaats.nl/z/huizen-en-kamers/huizen-te-huur/rotterdam-studio-rotterdam.html?query=rotterdam+studio&categoryId=2143&attributes=S%2C4551 , Tel:  erg goed gelegen t.o.v. Openbaar vervoer voor bezichtigingen kan u bellen naar: 06-20639077 / 06-11767104 of schrijf je gratis in op: www.woning-aangeboden.nl 
+Found: http://www.marktplaats.nl/z/huizen-en-kamers/rotterdam-studio.html?query=rotterdam+studio&attributes=S%2C4551&categoryId=1032 , Tel:  erg goed gelegen t.o.v. Openbaar vervoer voor bezichtigingen kan u bellen naar: 06-20639077 / 06-11767104 of schrijf je gratis in op: www.woning-aangeboden.nl 
+Found: http://www.marktplaats.nl/z/huizen-en-kamers/kamers-te-huur/rotterdam-studio.html?query=rotterdam+studio&attributes=S%2C4551&categoryId=2771 , Tel:  botlek, schiedam, rozenburg en brielle. Bel voor de mogelijkheden 0617435685. Gratis parkeren (openbaar), gratis wifi, gratis digitale tv. Bad/bedlinnen inbegrepen.… 
+Found: http://www.marktplaats.nl/z/huizen-en-kamers/rotterdam-studio.html?query=rotterdam+studio&attributes=S%2C4551+S%2C4576&categoryId=1032 , Tel:  erg goed gelegen t.o.v. Openbaar vervoer voor bezichtigingen kan u bellen naar: 06-20639077 / 06-11767104 of schrijf je gratis in op: www.woning-aangeboden.nl 
+Found: http://www.marktplaats.nl/z/huizen-en-kamers/huizen-te-huur/rotterdam-studio.html?query=rotterdam+studio&attributes=S%2C4551+S%2C4576&categoryId=2143 , Tel:  erg goed gelegen t.o.v. Openbaar vervoer voor bezichtigingen kan u bellen naar: 06-20639077 / 06-11767104 of schrijf je gratis in op: www.woning-aangeboden.nl 
+Found: http://www.marktplaats.nl/a/huizen-en-kamers/huizen-te-huur/m931547716-for-rent-studio-near-central-station-550-all-inclusive.html?c=be2da871b0d84f75c3056cc6db858f31&previousPage=lr , Tel: 0648759893
+Found: http://www.marktplaats.nl/a/huizen-en-kamers/huizen-te-huur/m914404825-ruime-studio-in-rotterdam-noord-te-huur.html?c=be2da871b0d84f75c3056cc6db858f31&previousPage=lr , Tel: 0102238912
+Found: http://www.marktplaats.nl/a/huizen-en-kamers/huizen-te-huur/m933556166-te-huur-3-kamer-woning-middelrode.html?c=9b26ed2a557deff636f4f8b9c5b7a618&previousPage=VIP , Tel: Telefoon: 010-2238912
+Found: http://www.marktplaats.nl/a/huizen-en-kamers/huizen-te-huur/m933549964-te-huur-2-kamer-appartement-beijerlaanselaan.html?c=9b26ed2a557deff636f4f8b9c5b7a618&previousPage=VIP , Tel: Telefoon: 010-2238912
+Found: http://www.marktplaats.nl/a/huizen-en-kamers/huizen-te-huur/m933542405-te-huur-5-kamer-maisonnette-beijerlaanselaan.html?c=9b26ed2a557deff636f4f8b9c5b7a618&previousPage=VIP , Tel: Telefoon: 010-2238912
+Found: http://www.marktplaats.nl/a/huizen-en-kamers/huizen-te-huur/m933447422-te-huren-4-kamer-appartament.html?c=9b26ed2a557deff636f4f8b9c5b7a618&previousPage=VIP , Tel: Mobiel: 06-46055599
+Found: http://www.marktplaats.nl/a/huizen-en-kamers/huizen-te-huur/m933275773-te-huur-2-kamer-appartement-boelstraat.html?c=9b26ed2a557deff636f4f8b9c5b7a618&previousPage=VIP , Tel: Mobiel: 06-46055599
+Found: http://www.marktplaats.nl/z/huizen-en-kamers/huizen-te-koop.html?categoryId=2142 , Tel:  goed . Www.klaasmendelvastgoedbv.nl . Helaas kan de mail niet beantwoord worden voor info bel:0653493029 
+Found: http://www.marktplaats.nl/z/huizen-en-kamers/huizen-te-koop/vrijstaand-huis.html?query=vrijstaand+huis&categoryId=2142 , Tel:  goed . Www.klaasmendelvastgoedbv.nl . Helaas kan de mail niet beantwoord worden voor info bel:0653493029 
+Found: http://www.marktplaats.nl/z/huizen-en-kamers/huizen-te-koop/huis-te-koop.html?query=huis+te+koop&categoryId=2142 , Tel:  goed . Www.klaasmendelvastgoedbv.nl . Helaas kan de mail niet beantwoord worden voor info bel:0653493029 
+Found: http://www.marktplaats.nl/z/huizen-en-kamers/huizen-te-koop/vrijstaande-woning-te-koop.html?query=vrijstaande+woning+te+koop&categoryId=2142 , Tel:  goed . Www.klaasmendelvastgoedbv.nl . Helaas kan de mail niet beantwoord worden voor info bel:0653493029 
+Found: http://www.marktplaats.nl/z/huizen-en-kamers/vrijstaande-woning-te-koop.html?query=vrijstaande+woning+te+koop&categoryId=1032 , Tel:  goed . Www.klaasmendelvastgoedbv.nl . Helaas kan de mail niet beantwoord worden voor info bel:0653493029 
+Found: http://www.marktplaats.nl/a/huizen-en-kamers/huizen-te-koop/m900754060-woonruimte-te-koopsommelsdijk.html?c=be2da871b0d84f75c3056cc6db858f31&previousPage=lr , Tel: 0648078314
+Found: http://www.marktplaats.nl/a/huizen-en-kamers/huizen-te-koop/m900754060-woonruimte-te-koopsommelsdijk.html?c=a2384ef0ece270f44503df9f8598c624&previousPage=lr , Tel: 0648078314
+2015/06/01 21:53:18 - HabitabberV2 terminated.

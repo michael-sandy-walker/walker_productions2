@@ -3,6 +3,7 @@ package view.action;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.layout.GridPane;
+import view.HabitabberGUI;
 import view.field.PapaField;
 import view.field.RegExField;
 
@@ -10,7 +11,8 @@ public class RemoveAction extends PapaAction {
 	
 	String name;
 	
-	public RemoveAction(String name) {
+	public RemoveAction(HabitabberGUI gui, String name) {
+		super(gui);
 		this.name = name;
 	}
 	

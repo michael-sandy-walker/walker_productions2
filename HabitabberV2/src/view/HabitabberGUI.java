@@ -2,7 +2,9 @@ package view;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import result.Page;
 import controller.MainSearcher;
@@ -25,7 +27,8 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -37,13 +40,10 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.layout.VBoxBuilder;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
-import javafx.scene.web.HTMLEditor;
 import javafx.stage.FileChooser;
-import javafx.stage.Modality;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 
@@ -61,6 +61,8 @@ public class HabitabberGUI extends Application {
 	private static int hIndex = 2;
 
 	private static int hIndexOffset = hIndex;
+
+	private Map<String, Boolean> checkBoxMap = new HashMap<String, Boolean>();
 
 	/**
 	 * Only for test reasons.
@@ -107,15 +109,15 @@ public class HabitabberGUI extends Application {
 		MenuBar menuBar = new MenuBar();
 
 		MenuItem menu11 = new MenuItem("Open");
+		HabitabberGUI gui = this;
 		menu11.setOnAction(new EventHandler<ActionEvent>() {
-
 			@Override
 			public void handle(ActionEvent event) {
 				FileChooser fileChooser = new FileChooser();
 				fileChooser.setTitle("Open Resource File");
 				File file = fileChooser.showOpenDialog(stage);								
 
-				MainSearcher mainSearcher = MainSearcher.getSingleton(null);
+				MainSearcher mainSearcher = MainSearcher.getSingleton(gui, null);
 				mainSearcher.addVisitedLinksFromFile(file.getAbsolutePath());
 			}
 		});
@@ -137,8 +139,8 @@ public class HabitabberGUI extends Application {
 	}
 
 	public void initForm(GridPane grid) {
-		PapaButton searchButton = new SearchButton();
-		PapaButton stopButton = new StopButton();
+		PapaButton searchButton = new SearchButton(this);
+		PapaButton stopButton = new StopButton(this);
 
 		CommandFactory.registerCommands();
 
@@ -196,11 +198,30 @@ public class HabitabberGUI extends Application {
 				hIndex++;
 			}
 		}
-		hIndexOffset = hIndex++;
+		for (String str : new String[]{"description","media"}) {
+			CheckBox checkBox = new CheckBox();
+			checkBox.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent event) {
+					CheckBox chk = (CheckBox) event.getSource();
+					checkBoxMap.put(str, chk.isSelected());
+				}
+			});
+			String labelName = str;
+			if (str.length() > 1) {
+				labelName = str.substring(0, 1).toUpperCase() + str.substring(1);
+			}
+			Label label = new Label(labelName);			
+			label.setTextFill(Color.web("0076a3"));
+			grid.add(label, 0, hIndex);
+			grid.add(checkBox, 1, hIndex, 2, 1);
+			hIndex++;
+		}
+		hIndexOffset = hIndex++;		
 		grid.add(new AddRegExButton(this, grid).getButton(), 0, hIndexOffset);
 	}
 
-	public static void appendOutputText(String str) {
+	public void appendOutputText(String str) {
 		//		System.out.println("append:"+ str + "\n");
 		//		HabitabberGUI.outputTextArea.appendText(str);
 		stage.show();
@@ -209,7 +230,7 @@ public class HabitabberGUI extends Application {
 	/**
 	 * @return the outputtextarea
 	 */
-	public static TextArea getOutputtextarea() {
+	public TextArea getOutputtextarea() {
 		return outputTextArea;
 	}
 
@@ -225,7 +246,7 @@ public class HabitabberGUI extends Application {
 		return numRows;
 	}
 
-	public static void setPage(Page page) {		
+	public void setPage(Page page) {		
 
 		//		GridPane grid;
 		//		for (Node node : stage.getScene().getRoot().getChildren()) {
@@ -233,26 +254,46 @@ public class HabitabberGUI extends Application {
 		//		}
 
 		//		grid.add(getOutputtextarea(), 3, 2, 3, 18);
-		if (scrollPane.getContent() == null) {
-			GridPane grid = new GridPane();
-			grid.setAlignment(Pos.TOP_LEFT);
-			grid.setHgap(5);
-			grid.setVgap(5);
-			grid.setPadding(new Insets(5, 5, 5, 5));
-			grid.setPrefHeight(600);
-			grid.setStyle("-fx-background-color: #1d1d1d; -fx-text-fill: white;");
-			scrollPane.setContent(new GridPane());
-		}
-		GridPane innerGrid = (GridPane)scrollPane.getContent();
-		int rowCount = getRowCount(innerGrid);
-		innerGrid.add(new Text(page.getUrl()), 0, rowCount);	
-		innerGrid.add(new Text(page.getContent().get("tel").toString()), 1, rowCount);				
+		if (getCheckboxConjunctions(page)) {
+			if (scrollPane.getContent() == null) {
+				GridPane grid = new GridPane();
+				grid.setAlignment(Pos.TOP_LEFT);
+				grid.setHgap(5);
+				grid.setVgap(5);
+				grid.setPadding(new Insets(5, 5, 5, 5));
+				grid.setPrefHeight(600);
+				grid.setStyle("-fx-background-color: #1d1d1d; -fx-text-fill: white;");
+				scrollPane.setContent(new GridPane());
+			}
+			GridPane innerGrid = (GridPane)scrollPane.getContent();
+			int rowCount = getRowCount(innerGrid);
+			Hyperlink hyperlink =new Hyperlink(page.getUrl());
+			hyperlink.setOnAction(new EventHandler<ActionEvent>() {
 
-		if (page.getDescription() != null) {
-			innerGrid.add(new PopupButton("Show content", page).getButton(), 2, rowCount);
+				@Override
+				public void handle(ActionEvent t) {
+					getHostServices().showDocument(hyperlink.getText());
+				}
+			});
+			innerGrid.add(hyperlink, 0, rowCount);	
+			innerGrid.add(new Text(page.getContent().get("tel").toString()), 1, rowCount);				
+
+			if (page.getDescription() != null) {
+				innerGrid.add(new PopupButton(this, "Show content", page).getButton(), 2, rowCount);
+			}
 		}
 
 		stage.show();
+	}
+	
+	public boolean getCheckboxConjunctions(Page page) {
+		for (String key : checkBoxMap.keySet()) {
+			List<Object> content = page.getContent().get(key);
+			if (checkBoxMap.get(key) && (content == null || content.isEmpty())) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 
@@ -284,7 +325,7 @@ public class HabitabberGUI extends Application {
 		grid.add(regExField.getTextField(), 1, firstFreeHIndex);
 
 		Image removeIcon = new Image(HabitabberGUI.class.getResourceAsStream("/view/delete.png"));
-		RemoveButton removeButton = new RemoveButton(name, new RemoveAction(name));
+		RemoveButton removeButton = new RemoveButton(name, new RemoveAction(this, name));
 		removeButton.getButton().setText("");
 		removeButton.getButton().setGraphic(new ImageView(removeIcon));
 		grid.add(removeButton.getButton(), 2, firstFreeHIndex);
@@ -300,7 +341,7 @@ public class HabitabberGUI extends Application {
 		return hIndexOffset;
 	}
 
-	public static Stage getStage() {
+	public Stage getStage() {
 		return stage;
 	}
 }

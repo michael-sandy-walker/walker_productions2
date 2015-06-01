@@ -7,6 +7,7 @@ import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
+import view.HabitabberGUI;
 import view.field.PapaField;
 import view.field.ParseImmediateField;
 import view.field.RegExField;
@@ -19,8 +20,8 @@ public class SearchAction extends PapaAction {
 	private Task<Void> task;
 	private Service<Void> service;
 
-	public SearchAction() {
-		super();
+	public SearchAction(HabitabberGUI gui) {
+		super(gui);
 	}
 
 	@Override
@@ -45,7 +46,7 @@ public class SearchAction extends PapaAction {
 							argList.add(v);
 					}
 				} 
-			} else { // RegEx			
+			} else if (field instanceof RegExField) {			
 				if (field.getTextField() != null) {					
 					String value = field.getTextField().getText();
 					if (value != null && !value.isEmpty()) {
@@ -81,7 +82,8 @@ public class SearchAction extends PapaAction {
 		@Override
 		protected Void call() throws Exception {
 			MainSearcher.setStop(false);
-			MainSearcher mainSearcher = MainSearcher.getSingleton(argv);
+			MainSearcher mainSearcher = MainSearcher.getSingleton(gui, argv);
+			mainSearcher.setGui(gui);
 			mainSearcher.activate(argv);
 			return null;
 		}

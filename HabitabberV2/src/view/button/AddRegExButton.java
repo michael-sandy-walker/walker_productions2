@@ -11,6 +11,6 @@ public class AddRegExButton  extends PapaButton {
 	}
 
 	public AddRegExButton(String name, HabitabberGUI gui, GridPane grid) {
-		super(name, new AddRegExAction(name, gui, grid));
+		super(name, new AddRegExAction(gui, name, grid));
 	}
 }

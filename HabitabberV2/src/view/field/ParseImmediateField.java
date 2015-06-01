@@ -13,7 +13,7 @@ public class ParseImmediateField extends PapaField {
 	
 	public ParseImmediateField(String name, String value) {
 		super(name, value);
-		CheckBox checkBox = new CheckBox();;
+		CheckBox checkBox = new CheckBox();
 		if (value != null && !value.isEmpty())
 			checkBox.setSelected(value.substring(0,1).toLowerCase().equals("y"));
 		else {
