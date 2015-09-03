@@ -53,9 +53,13 @@ public class PapaField {
 	public static Map<String, PapaField> getFieldMap() {
 		return fieldMap;
 	}
+	
+	public static int retrieveFirstFreeHIndex() {		
+		return retrieveFirstFreeHIndex(HabitabberGUI.getHIndexOffset());
+	}
 
-	public static int retrieveFirstFreeHIndex() {
-		int freeHIndex = HabitabberGUI.getHIndexOffset() + 1;
+	public static int retrieveFirstFreeHIndex(int index) {
+		int freeHIndex = index + 1;
 		Integer prevHIndex = null;
 
 		Map<Integer, PapaField> orderedMap = new TreeMap<Integer, PapaField>();

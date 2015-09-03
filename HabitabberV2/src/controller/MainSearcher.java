@@ -1,13 +1,17 @@
 package controller;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.ConsoleHandler;
@@ -50,6 +54,8 @@ public class MainSearcher {
 	private HabitabberGUI gui;
 	
 	WebFile webFile;
+	
+	private Map<String, String> categoryMap = new HashMap<String, String>();
 
 	private List<Token> tokenList = new ArrayList<Token>();
 
@@ -205,20 +211,13 @@ public class MainSearcher {
 	}
 
 	public void terminate() {
-		//		if (!isStop()) {
 		if (io != null) {
 			io.reset(true);
 			counter = 0;
 			setStop(true);
 			if (io != null) {
-				//			List<Thread> threadPool = SearchAction.getThreadPool();
-				//			for (Thread t : threadPool) {
-				//				t.interrupt();								
-				//			}
-				//				System.out.println("");
 				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 				Date date = new Date();
-				//			io.write(dateFormat.format(date) + " - HabitabberV2 terminated.\n", true);
 				outputText(dateFormat.format(date) + " - HabitabberV2 terminated.\n");
 				String visitedLinkListName = io.getReadFileName();
 				if (visitedLinkListName == null || visitedLinkListName.isEmpty()) {
@@ -230,8 +229,7 @@ public class MainSearcher {
 				}
 				io.closeIO();	
 			}
-		}
-		//		}
+		}		
 	}
 
 	public List<Command>parseCommands(String... argv) {
@@ -311,7 +309,6 @@ public class MainSearcher {
 			e1.printStackTrace();
 		}
 
-		//		System.out.print(counter + " ");
 		if (logger.getLevel().equals(Level.INFO)) {
 			System.out.print(">");		
 			if (counter != 0 && counter%60 == 0) {
@@ -376,7 +373,7 @@ public class MainSearcher {
 		return retrievePage(url, false);
 	}
 
-	public Page retrievePage(String url, boolean subPage) {	
+	public Page retrievePage(String url, boolean subPage) {			
 		Page result = new Page();
 		try {
 			String content = "";
@@ -401,34 +398,19 @@ public class MainSearcher {
 		// Parse the content and stuff it into Site.
 		Document doc = Jsoup.parse(page.getUnparsedContent());		
 		Elements links = doc.select("a[href]");				
-		for (Element link : links) {			
-			String linkStr = link.attr("abs:href");			
-
-			boolean containsStr = false;
-			if ((TokenCommand.getTokenList() == null || TokenCommand.getTokenList().isEmpty()) 
-					&& (ConcatenatedTokenCommand.getTokenList() == null || ConcatenatedTokenCommand.getTokenList().isEmpty())) {
-				containsStr = true;
-			} else {								
-				if (TokenCommand.getTokenList() != null) {
-					for (Token token : TokenCommand.getTokenList()) {					
-						if (!linkStr.isEmpty() && linkStr.contains(token.getContent())) {
-							containsStr = true;
-							break;
-						}
-					}										
-				}				
-				boolean containsStrTmp = true;
-				for (Token token : ConcatenatedTokenCommand.getTokenList()) {
-					if (linkStr.isEmpty() || !linkStr.contains(token.getContent())) {						
-						containsStrTmp = false;
-						break;
-					}
-				}	
-				if (!ConcatenatedTokenCommand.getTokenList().isEmpty() && containsStrTmp) {
-					containsStr = containsStrTmp;
+		for (Element link : links) {						
+			String linkStr = link.attr("href");
+			if (linkStr.startsWith("/")) { // We have a sub page link here, let's add its parent url
+				try {
+					URL url = new URL(page.getUrl());
+					String host = url.getHost();
+					String protocol = url.getProtocol();
+					linkStr = protocol + "://" + host + linkStr;
+				} catch (MalformedURLException e) {
+					e.printStackTrace();
 				}
-			}
-			if (containsStr) {				
+			}			
+			if (containsString(linkStr)) {				
 				SubPage result = new SubPage();	
 				result.setUrl(linkStr);
 				logger.fine("Adding link to page " + page.getUrl() + ": " + linkStr);
@@ -436,30 +418,81 @@ public class MainSearcher {
 			}
 		}
 	}
+	
+	public boolean containsString(String linkStr) {
+		boolean containsStr = false;
+		if ((TokenCommand.getTokenList() == null || TokenCommand.getTokenList().isEmpty()) 
+				&& (ConcatenatedTokenCommand.getTokenList() == null || ConcatenatedTokenCommand.getTokenList().isEmpty())) {
+			containsStr = true;
+		} else {								
+			if (TokenCommand.getTokenList() != null) {
+				for (Token token : TokenCommand.getTokenList()) {					
+					if (!linkStr.isEmpty() && linkStr.contains(token.getContent())) {
+						containsStr = true;
+						break;
+					}
+				}										
+			}				
+			boolean containsStrTmp = true;
+			for (Token token : ConcatenatedTokenCommand.getTokenList()) {
+				if (linkStr.isEmpty() || !linkStr.contains(token.getContent())) {						
+					containsStrTmp = false;
+					break;
+				}
+			}	
+			if (!ConcatenatedTokenCommand.getTokenList().isEmpty()) {
+				containsStr = containsStrTmp;
+			}
+		}
+		return containsStr;
+	}
 
 	public void parseContent(Page page) {
-		// If we don't parse immediately, retrieve the content of the link
-		if (!doImmediateParse && (page instanceof SubPage)) {			
-			page = retrievePage(page.getUrl(), true);
+		// If the main page does not contain the conjunctive / disjunctive set(s)
+		if (page instanceof Page && !containsString(page.getUrl())) {
+			return;
 		}
-		// Parse the content and stuff it into Site.
+		// If we don't parse immediately, retrieve the content of the link
+		else if (!doImmediateParse && (page instanceof SubPage)) {			
+			page = retrievePage(page.getUrl(), true);
+		}		
+		// Parse the content and stuff it into the Page.
 		String unparsedContent = page.getUnparsedContent();
 		if (unparsedContent != null && !unparsedContent.isEmpty()) {
 			Document doc = Jsoup.parse(unparsedContent);	
 			Elements media = doc.select("[src]");
-			Elements description = doc.select("div.l-body-content");
+			Elements[] descriptions = new Elements[]{doc.select("div.l-body-content"), doc.select("section[id=postingbody]")};
+			Elements prices = doc.select("span.price");
 
 			logger.finest(doc.toString());						
 
 			for (Element medium : media) {
 				if (medium.tagName().equals("img"))
-					page.setContent("media", medium.attr("abs:src"));			
+					page.setContent("media", medium.attr("src"));			
 			}
 			
-			for (Element desc : description) {
-				if (description.text() != null && !description.text().isEmpty()) {
-					page.setDescription(desc);
-					page.setContent("description", desc);
+			for (Elements description : descriptions) {
+				for (Element desc : description) {
+					if (description.text() != null && !description.text().isEmpty()) {
+						page.setDescription(desc);
+						page.setContent("description", desc);
+					}
+				}
+			}
+			
+			for (Element p : prices) {
+				if (p.text() != null && !p.text().isEmpty()) {
+					page.setContent("price", p.text());
+				}
+			}
+			
+			for (String categoryName : categoryMap.keySet()) {
+				String categoryValue = categoryMap.get(categoryName);
+				Elements elements = doc.select(categoryValue);
+				for (Element element : elements) {
+					if (element.text() != null && element.text().isEmpty()) {
+						page.setContent(categoryName, element.text());
+					}
 				}
 			}
 
@@ -473,13 +506,15 @@ public class MainSearcher {
 								Matcher m = p.matcher(text);
 								if (m.matches()) {
 									logger.fine(text);		
-										String str = "Found: " + page.getUrl() + " , Tel: " + text;
+										String str = "Found: " + page.getUrl() + " , content: " + text;
 										//								System.out.println(str);
 										//								io.write(str + "\n", true);
 										//								HabitabberGUI.appendOutputText(str + "\n");
 										//								io.write(page.getUrl(), true);
-										page.setContent("tel", text);
-										outputText(str + "\n");
+										if (!text.trim().isEmpty()) { // We could have a regex like .*
+											page.setContent("tel", text);
+										}
+										outputText(str + "\n");										
 										setPage(page);
 										break search;									
 								}								
@@ -537,6 +572,7 @@ public class MainSearcher {
 	}
 	
 	public void setPage(Page page) {	
+//		io.write(page.getUrl(), true);
 		if (!inMain) {
 			Platform.runLater(new Runnable() {
 				@Override
@@ -555,5 +591,13 @@ public class MainSearcher {
 		this.gui = gui;
 	}
 	
+	public void resetVisitedLinks() {
+		visitedLinkList = new TreeSet<String>();
+	}
+	
+	public void addCategory(String name, String value) {
+		categoryMap.put(name, value);		
+		System.out.println("Saving category " + name + ", value: " + value);
+	}
 	
 }

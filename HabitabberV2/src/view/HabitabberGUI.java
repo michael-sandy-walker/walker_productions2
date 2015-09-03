@@ -6,8 +6,37 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.layout.VBoxBuilder;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.text.Text;
+import javafx.scene.web.HTMLEditor;
+import javafx.stage.FileChooser;
+import javafx.stage.Modality;
+import javafx.stage.Popup;
+import javafx.stage.Stage;
 import result.Page;
-import controller.MainSearcher;
 import utilities.command.Command;
 import utilities.command.CommandFactory;
 import view.action.RemoveAction;
@@ -20,38 +49,12 @@ import view.button.StopButton;
 import view.field.PapaField;
 import view.field.ParseImmediateField;
 import view.field.RegExField;
-import javafx.application.Application;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Node;
-import javafx.scene.Scene;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Label;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextArea;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.text.Text;
-import javafx.stage.FileChooser;
-import javafx.stage.Popup;
-import javafx.stage.Stage;
+import controller.MainSearcher;
 
 public class HabitabberGUI extends Application {
 
 	public static final String TITLE = "Habitabber";
 
-	private static final TextArea outputTextArea = new TextArea();
 	private static final ScrollPane scrollPane = new ScrollPane();
 
 	private static Stage stage;
@@ -133,9 +136,94 @@ public class HabitabberGUI extends Application {
 		});
 		menu1.getItems().add(menu12);
 		menuBar.getMenus().add(menu1);
+		
+		final Menu menu2 = new Menu("View");		
+
+		MenuItem menu21 = new MenuItem("Clear output screen");
+		menu21.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				scrollPane.setContent(null);
+				stage.show();
+				MainSearcher mainSearcher = MainSearcher.getSingleton(gui, null);
+				mainSearcher.resetVisitedLinks();
+				
+			}
+		});
+		menu2.getItems().add(menu21);
+		menuBar.getMenus().add(menu2);
+		
+		final Menu menu3 = new Menu("Search");		
+
+		MenuItem menu31 = new MenuItem("Add category");
+		menu31.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				addCategory();				
+			}
+		});
+		menu3.getItems().add(menu31);
+		menuBar.getMenus().add(menu3);
+
 
 		//		grid.add(menuBar, 0, 0);
 		((VBox) scene.getRoot()).getChildren().addAll(menuBar);
+	}
+	
+	private void addCategory() {
+		final Stage myDialog = new Stage();
+        myDialog.initModality(Modality.WINDOW_MODAL);
+        
+//        Scene myDialogScene = new Scene(VBoxBuilder.create()                
+//                .alignment(Pos.CENTER)
+//                .padding(new Insets(10))
+//                .build());
+        Scene myDialogScene = new Scene(new VBox(), 400, 100);
+
+        GridPane grid = initGrid(myDialogScene);
+        Label categoryNameLabel = new Label("Category name");
+        categoryNameLabel.setTextFill(Color.web("0076a3"));
+        categoryNameLabel.setPrefSize(100, 20);	
+        grid.add(categoryNameLabel,0,0,1,1);
+        TextField categoryName = new TextField("Category");        
+        grid.add(categoryName,1,0,1,1);
+        Label categoryValueLabel = new Label("Category value");
+        categoryValueLabel.setTextFill(Color.web("0076a3"));
+        categoryValueLabel.setPrefSize(100, 20);	
+        grid.add(categoryValueLabel,0,1,1,1);        
+        TextField categoryValue = new TextField("Value");        
+        grid.add(categoryValue,1,1,1,1);               
+		
+		 Button saveButton = new Button("Save");
+		 saveButton.setOnAction(new EventHandler<ActionEvent>() {
+
+				@Override
+				public void handle(ActionEvent event) {
+					integrateCategory(categoryName.getText(), categoryValue.getText());
+				}
+			});
+			grid.add(saveButton,1,2,2,1);
+			
+			 Button button = new Button("Add category");
+				button.setOnAction(new EventHandler<ActionEvent>() {
+
+					@Override
+					public void handle(ActionEvent event) {
+						addRegExField(grid, "Category", 4);
+					}
+				});
+				grid.add(button,1,3,2,1);
+      
+        myDialog.setScene(myDialogScene);        
+		
+		myDialog.show();	
+	}
+	
+	public void integrateCategory(String name, String value) {
+		MainSearcher mainSearcher = MainSearcher.getSingleton(this, null);
+		mainSearcher.addCategory(name, value);
 	}
 
 	public void initForm(GridPane grid) {
@@ -154,9 +242,6 @@ public class HabitabberGUI extends Application {
 		Image stopIcon = new Image(HabitabberGUI.class.getResourceAsStream("/view/stop.png"));
 		stopButton.getButton().setText("");
 		stopButton.getButton().setGraphic(new ImageView(stopIcon));
-
-		getOutputtextarea().setPrefHeight(600);
-		//		grid.add(getOutputtextarea(), 3, 2, 3, 18);
 
 		scrollPane.setPrefHeight(stage.getMaxHeight());
 		grid.add(scrollPane, 3, 2, 3, 18);
@@ -230,9 +315,9 @@ public class HabitabberGUI extends Application {
 	/**
 	 * @return the outputtextarea
 	 */
-	public TextArea getOutputtextarea() {
-		return outputTextArea;
-	}
+//	public TextArea getOutputtextarea() {
+//		return outputTextArea;
+//	}
 
 	private static int getRowCount(GridPane pane) {
 		int numRows = pane.getRowConstraints().size();
@@ -275,17 +360,31 @@ public class HabitabberGUI extends Application {
 					getHostServices().showDocument(hyperlink.getText());
 				}
 			});
-			innerGrid.add(hyperlink, 0, rowCount);	
-			innerGrid.add(new Text(page.getContent().get("tel").toString()), 1, rowCount);				
-
-			if (page.getDescription() != null) {
-				innerGrid.add(new PopupButton(this, "Show content", page).getButton(), 2, rowCount);
+			innerGrid.add(hyperlink, 0, rowCount);
+			int index = 1;
+			for (String key : page.getContent().keySet()) {
+				showContent(key, page, innerGrid, index, rowCount);
+				index++;
 			}
+//			showContent("tel", page, innerGrid, 1, rowCount);
+//			showContent("price", page, innerGrid, 2, rowCount);
+			
+			if (page.getDescription() != null) {
+				innerGrid.add(new PopupButton(this, "Show content", page).getButton(), 3, rowCount);
+			}			
+			
 		}
 
 		stage.show();
 	}
 	
+	private void showContent(String contentName, Page page, GridPane innerGrid, int col, int row) {
+		List<Object> content = page.getContent().get(contentName);
+		if (content != null && !content.isEmpty()) {
+			innerGrid.add(new Text(contentName + ": " + content.toString() + " "), col, row);
+		}
+	}
+
 	public boolean getCheckboxConjunctions(Page page) {
 		for (String key : checkBoxMap.keySet()) {
 			List<Object> content = page.getContent().get(key);
@@ -313,14 +412,25 @@ public class HabitabberGUI extends Application {
 		//		layout.getChildren().addAll(show, hide);
 		stage.show();
 	}
-
+	
 	public void addRegExField(GridPane grid, String regEx) {
-		int firstFreeHIndex = PapaField.retrieveFirstFreeHIndex();
+		addRegExField(grid, regEx, null);
+	}
+
+	public void addRegExField(GridPane grid, String regEx, Integer hIndex) {
+		int firstFreeHIndex;
+		if (hIndex == null) {
+			firstFreeHIndex = PapaField.retrieveFirstFreeHIndex();	
+		} else {
+			firstFreeHIndex = PapaField.retrieveFirstFreeHIndex(hIndex);
+		}
+		
 		List<Node> nodeList = new ArrayList<Node>();
 		String name = "" + firstFreeHIndex;
-		RegExField regExField = new RegExField(name, regEx);
+		RegExField regExField = new RegExField(name, "");
 		//		regExFieldList.add(regExField);
-		Label label = new Label("Regex " + (firstFreeHIndex - getHIndexOffset()));		
+		Label label = new Label(regEx + " " + (firstFreeHIndex - getHIndexOffset()));		
+		label.setTextFill(Color.web("0076a3"));
 		grid.add(label, 0, firstFreeHIndex);
 		grid.add(regExField.getTextField(), 1, firstFreeHIndex);
 
@@ -334,7 +444,9 @@ public class HabitabberGUI extends Application {
 		nodeList.add(removeButton.getButton());
 		regExField.setRegExRowNodes(nodeList);
 		regExField.setHIndex(firstFreeHIndex);
-		hIndex++;
+		if (hIndex == null) {
+			HabitabberGUI.hIndex++;
+		}
 	}
 
 	public static int getHIndexOffset() {
