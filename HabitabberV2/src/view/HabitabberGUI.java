@@ -50,6 +50,7 @@ import view.button.RemoveButton;
 import view.button.SearchButton;
 import view.button.StopButton;
 import view.field.BabyField;
+import view.field.BasicField;
 import view.field.CategoryField;
 import view.field.PapaField;
 import view.field.ParseImmediateField;
@@ -273,7 +274,7 @@ public class HabitabberGUI extends Application {
 
 		CommandFactory.registerCommands();
 
-		grid.add(new PapaField("-p", "http://www.marktplaats.nl/z.html?attributes=S%2C4548&priceTo=800%2C00&categoryId=2143&postcode=&distance=25000").getTextField(),0,1,4,1);
+		grid.add(new BasicField("-p", "http://www.marktplaats.nl/z.html?attributes=S%2C4548&priceTo=800%2C00&categoryId=2143&postcode=&distance=25000").getTextField(),0,1,4,1);
 		searchButton.getButton().setPrefSize(100, 20);		
 		grid.add(searchButton.getButton(),4,1);
 		stopButton.getButton().setPrefSize(50, 20);
@@ -313,10 +314,10 @@ public class HabitabberGUI extends Application {
 					ParseImmediateField field = new ParseImmediateField("-" + CommandFactory.getCommandParamByClassName(cmd));
 					grid.add(field.getCheckbox(), 1, hIndex[REGEX_TYPE], 2, 1);
 				} else if (cmd.equals("TokenCommand")){
-					PapaField field = new PapaField("-" + CommandFactory.getCommandParamByClassName(cmd), "huizen-en-kamers");
+					PapaField field = new BasicField("-" + CommandFactory.getCommandParamByClassName(cmd), "huizen-en-kamers");
 					grid.add(field.getTextField(), 1, hIndex[REGEX_TYPE], 2, 1);
 				} else {
-					PapaField field = new PapaField("-" + CommandFactory.getCommandParamByClassName(cmd));
+					PapaField field = new BasicField("-" + CommandFactory.getCommandParamByClassName(cmd));
 					grid.add(field.getTextField(), 1, hIndex[REGEX_TYPE], 2, 1);
 				}
 				//				grid.add(new Label(cmd + " ( -" + CommandFactory.getCommandParamByClassName(cmd) + " )"), 0, hIndex);
@@ -496,7 +497,7 @@ public class HabitabberGUI extends Application {
 		grid.add(babyField.getTextField(), 1, firstFreeHIndex);
 
 		Image removeIcon = new Image(HabitabberGUI.class.getResourceAsStream("/view/delete.png"));
-		RemoveButton removeButton = new RemoveButton(name, new RemoveAction(this, name));
+		RemoveButton removeButton = new RemoveButton(name, new RemoveAction(this, babyField.getId()));
 		removeButton.getButton().setText("");
 		removeButton.getButton().setGraphic(new ImageView(removeIcon));
 		grid.add(removeButton.getButton(), 2, firstFreeHIndex);

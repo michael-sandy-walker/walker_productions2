@@ -1,17 +1,11 @@
 package view.field;
 
-import java.util.Map;
-import java.util.TreeMap;
-
 import view.HabitabberGUI;
 
 public class RegExField extends BabyField {
 	
-	private static 	Map<String, PapaField> fieldMap = new TreeMap<String, PapaField>();
-
 	public RegExField(String name, String text) {
-		super(name, text);
-		RegExField.fieldMap.put(name, this);
+		super(name, text, HabitabberGUI.REGEX_TYPE);
 	}
 			
 	public static int retrieveFirstFreeHIndex() {
@@ -19,6 +13,6 @@ public class RegExField extends BabyField {
 	}
 	
 	public static int retrieveFirstFreeHIndex(int index) {
-		return retrieveFirstFreeHIndex(index, fieldMap);
+		return retrieveFirstFreeHIndex(index, PapaField.getFieldMap(), HabitabberGUI.REGEX_TYPE);
 	}
 }

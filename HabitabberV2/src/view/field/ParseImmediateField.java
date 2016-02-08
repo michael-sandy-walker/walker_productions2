@@ -3,7 +3,7 @@ package view.field;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 
-public class ParseImmediateField extends PapaField {
+public class ParseImmediateField extends BasicField {
 
 	private CheckBox checkbox;
 	

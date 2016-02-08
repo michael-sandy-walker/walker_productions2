@@ -4,14 +4,17 @@ import java.util.List;
 
 import javafx.scene.Node;
 
-public class BabyField extends PapaField {
+public abstract class BabyField extends PapaField {
 	
 	List<Node> nodeList;
 	
 	int hIndex;
 	
-	public BabyField(String name, String text) {
+	private final int type;
+	
+	public BabyField(String name, String text, int type) {
 		super(name, text);
+		this.type = type;
 	}
 	
 	public void setRegExRowNodes(List<Node> nodeList) {
@@ -28,5 +31,13 @@ public class BabyField extends PapaField {
 	
 	public int getHIndex() {
 		return hIndex;
+	}
+
+	@Override
+	/**
+	 * @return the type
+	 */
+	public int getType() {
+		return type;
 	}
 }

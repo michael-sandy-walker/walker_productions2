@@ -6,20 +6,31 @@ import java.util.TreeMap;
 import javafx.scene.control.TextField;
 import view.HabitabberGUI;
 
-public class PapaField {
+public abstract class PapaField {
 	private TextField textField;
 	private String name;
+	private String id;
 
 	private static 	Map<String, PapaField> fieldMap = new TreeMap<String, PapaField>();
+	
+	public static final String SEPARATOR = "-#-";
 
 	public PapaField(String name) {
 		this(name, "");
 	}
 
-	public PapaField(String name, String text) {
+	public PapaField(String name, String text) {		
+		this(name, "", "");
+	}
+	
+	public PapaField(String name, String text, String id) {
+		if (id != null && !id.isEmpty())
+			this.id = id;
+		else
+			setId(this.getClass().getSimpleName() + SEPARATOR + name);
 		setTextField(new TextField(text));
 		setName(name);
-		fieldMap.put(name, this);
+		fieldMap.put(getId(), this);
 	}
 
 	/**
@@ -54,19 +65,19 @@ public class PapaField {
 		return fieldMap;
 	}
 	
-	public static int retrieveFirstFreeHIndex() {		
-		return retrieveFirstFreeHIndex(HabitabberGUI.getHIndexOffset(HabitabberGUI.REGEX_TYPE));
+	public static int retrieveFirstFreeHIndex(int type) {		
+		return retrieveFirstFreeHIndex(HabitabberGUI.getHIndexOffset(type), type);
 	}
 
-	public static int retrieveFirstFreeHIndex(int index) {
-		return retrieveFirstFreeHIndex(index, fieldMap);
+	public static int retrieveFirstFreeHIndex(int index, int type) {
+		return retrieveFirstFreeHIndex(index, fieldMap, type);
 	}
 	
-	public static int retrieveFirstFreeHIndex(Map<String, PapaField> fieldMap) {		
-		return retrieveFirstFreeHIndex(HabitabberGUI.getHIndexOffset(HabitabberGUI.REGEX_TYPE), fieldMap);
+	public static int retrieveFirstFreeHIndex(Map<String, PapaField> fieldMap, int type) {		
+		return retrieveFirstFreeHIndex(HabitabberGUI.getHIndexOffset(type), fieldMap, type);
 	}
 	
-	public static int retrieveFirstFreeHIndex(int index, Map<String, PapaField> fieldMap) {		
+	public static int retrieveFirstFreeHIndex(int index, Map<String, PapaField> fieldMap, int type) {		
 		int freeHIndex = index + 1;
 		Integer prevHIndex = null;
 
@@ -74,8 +85,9 @@ public class PapaField {
 
 		for (Map.Entry<String, PapaField> entry : fieldMap.entrySet()) {
 			PapaField field = (PapaField) entry.getValue();
-			if (field instanceof BabyField) {
-				orderedMap.put(Integer.parseInt(entry.getKey()), entry.getValue());
+			if (field.getType() == type) {
+				String keyStr = entry.getKey();
+				orderedMap.put(Integer.parseInt(keyStr.substring(keyStr.indexOf(PapaField.SEPARATOR) + PapaField.SEPARATOR.length())), entry.getValue());
 			}			
 		}
 
@@ -101,4 +113,20 @@ public class PapaField {
 		}
 		return freeHIndex;
 	}
+
+	/**
+	 * @return the id
+	 */
+	public String getId() {
+		return id;
+	}
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(String id) {
+		this.id = id;
+	}
+	
+	public abstract int getType();
 }
