@@ -26,8 +26,11 @@ public class PopupAction extends PapaAction {
 	@Override
 	public void performAction() {
 		
-		final Stage myDialog = new Stage();
-        myDialog.initModality(Modality.WINDOW_MODAL);
+		final Stage dialogStage = new Stage();
+		dialogStage.getIcons().add(HabitabberGUI.HABITABBER_ICON);
+		dialogStage.setTitle("Details");
+		
+		dialogStage.initModality(Modality.WINDOW_MODAL);
 		
         HTMLEditor editor = new HTMLEditor();
         String html = "<html><body>";
@@ -50,8 +53,8 @@ public class PopupAction extends PapaAction {
                 .padding(new Insets(10))
                 .build());
       
-        myDialog.setScene(myDialogScene);
+        dialogStage.setScene(myDialogScene);
 		
-		myDialog.show();	
+        dialogStage.show();	
 	}
 }

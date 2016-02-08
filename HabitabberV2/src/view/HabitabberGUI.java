@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -20,22 +22,23 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.layout.VBoxBuilder;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
-import javafx.scene.web.HTMLEditor;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import result.Page;
 import utilities.command.Command;
 import utilities.command.CommandFactory;
@@ -46,6 +49,8 @@ import view.button.PopupButton;
 import view.button.RemoveButton;
 import view.button.SearchButton;
 import view.button.StopButton;
+import view.field.BabyField;
+import view.field.CategoryField;
 import view.field.PapaField;
 import view.field.ParseImmediateField;
 import view.field.RegExField;
@@ -53,7 +58,12 @@ import controller.MainSearcher;
 
 public class HabitabberGUI extends Application {
 
+	public static final int REGEX_TYPE = 0;	
+	public static final int CATEGORY_TYPE = 1;
+	
 	public static final String TITLE = "Habitabber";
+	
+	public static Image HABITABBER_ICON = new Image(HabitabberGUI.class.getResourceAsStream("/view/habitabber_64.png"));
 
 	private static final ScrollPane scrollPane = new ScrollPane();
 
@@ -61,11 +71,13 @@ public class HabitabberGUI extends Application {
 
 	private static GridPane grid;
 
-	private static int hIndex = 2;
+	private static int hIndex[] = {2, 0};
 
-	private static int hIndexOffset = hIndex;
-
+	private static int hIndexOffset[] = {hIndex[REGEX_TYPE], 4};
+	
 	private Map<String, Boolean> checkBoxMap = new HashMap<String, Boolean>();
+	
+	private static Stage progressIndicatorStage = null;
 
 	/**
 	 * Only for test reasons.
@@ -78,14 +90,27 @@ public class HabitabberGUI extends Application {
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		HabitabberGUI.stage= primaryStage;
+//		primaryStage.getIcons().add(new Image(HabitabberGUI.class.getResourceAsStream("/view/delete-2.ico")));
 		primaryStage.setTitle(TITLE);
 
 		Scene scene = new Scene(new VBox(), 1200, 600);
 		scene.setFill(Color.OLDLACE);
+		
+		
+		primaryStage.getIcons().add(HABITABBER_ICON);
+//		primaryStage.getIcons().add(new Image("http://goo.gl/kYEQl"));
 
 		initMenu(scene);
 		GridPane grid = initGrid(scene);
 		initForm(grid);
+		
+		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent t) {
+                Platform.exit();
+                System.exit(0);
+            }
+        });
 
 		primaryStage.setScene(scene);
 		primaryStage.show();
@@ -120,8 +145,10 @@ public class HabitabberGUI extends Application {
 				fileChooser.setTitle("Open Resource File");
 				File file = fileChooser.showOpenDialog(stage);								
 
-				MainSearcher mainSearcher = MainSearcher.getSingleton(gui, null);
-				mainSearcher.addVisitedLinksFromFile(file.getAbsolutePath());
+				if (file != null) {
+					MainSearcher mainSearcher = MainSearcher.getSingleton(gui, null);				
+					mainSearcher.addVisitedLinksFromFile(file.getAbsolutePath());
+				}
 			}
 		});
 		menu1.getItems().add(menu11);
@@ -152,6 +179,18 @@ public class HabitabberGUI extends Application {
 			}
 		});
 		menu2.getItems().add(menu21);
+		
+		MenuItem menu22 = new MenuItem("Show progress indicator");
+		menu22.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				if (progressIndicatorStage != null)
+					progressIndicatorStage.show();
+			}
+		});	
+		menu2.getItems().add(menu22);
+		
 		menuBar.getMenus().add(menu2);
 		
 		final Menu menu3 = new Menu("Search");		
@@ -174,13 +213,15 @@ public class HabitabberGUI extends Application {
 	
 	private void addCategory() {
 		final Stage myDialog = new Stage();
+		myDialog.getIcons().add(HABITABBER_ICON);
+		myDialog.setTitle("Categories");
         myDialog.initModality(Modality.WINDOW_MODAL);
         
 //        Scene myDialogScene = new Scene(VBoxBuilder.create()                
 //                .alignment(Pos.CENTER)
 //                .padding(new Insets(10))
 //                .build());
-        Scene myDialogScene = new Scene(new VBox(), 400, 100);
+        Scene myDialogScene = new Scene(new VBox(), 400, 200);
 
         GridPane grid = initGrid(myDialogScene);
         Label categoryNameLabel = new Label("Category name");
@@ -211,7 +252,7 @@ public class HabitabberGUI extends Application {
 
 					@Override
 					public void handle(ActionEvent event) {
-						addRegExField(grid, "Category", 4);
+						addCategoryField(grid, "Category", "", 4);
 					}
 				});
 				grid.add(button,1,3,2,1);
@@ -262,29 +303,30 @@ public class HabitabberGUI extends Application {
 		grid.getColumnConstraints().addAll(col1Constraints, col2Constraints, col3Constraints, col4Constraints, col5Constraints, col6Constraints);
 
 		//Add input fields and fill SearchAction with it
-		hIndex = 2;
+		hIndex[REGEX_TYPE] = 2;
 		for (String cmd : Command.getRegisteredCommands()) {
 			if (!cmd.equals("PageCommand") && !cmd.equals("RegExCommand")) {
 				Label label = new Label(CommandFactory.getCommandAbbreviationByClassName(cmd));
 				label.setTextFill(Color.web("0076a3"));
-				grid.add(label, 0, hIndex);
+				grid.add(label, 0, hIndex[REGEX_TYPE]);
 				if (cmd.equals("ParseImmediateCommand")) {
 					ParseImmediateField field = new ParseImmediateField("-" + CommandFactory.getCommandParamByClassName(cmd));
-					grid.add(field.getCheckbox(), 1, hIndex, 2, 1);
+					grid.add(field.getCheckbox(), 1, hIndex[REGEX_TYPE], 2, 1);
 				} else if (cmd.equals("TokenCommand")){
 					PapaField field = new PapaField("-" + CommandFactory.getCommandParamByClassName(cmd), "huizen-en-kamers");
-					grid.add(field.getTextField(), 1, hIndex, 2, 1);
+					grid.add(field.getTextField(), 1, hIndex[REGEX_TYPE], 2, 1);
 				} else {
 					PapaField field = new PapaField("-" + CommandFactory.getCommandParamByClassName(cmd));
-					grid.add(field.getTextField(), 1, hIndex, 2, 1);
+					grid.add(field.getTextField(), 1, hIndex[REGEX_TYPE], 2, 1);
 				}
 				//				grid.add(new Label(cmd + " ( -" + CommandFactory.getCommandParamByClassName(cmd) + " )"), 0, hIndex);
 
-				hIndex++;
+				hIndex[REGEX_TYPE]++;
 			}
 		}
 		for (String str : new String[]{"description","media"}) {
 			CheckBox checkBox = new CheckBox();
+			checkBox.setSelected(true);
 			checkBox.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(ActionEvent event) {
@@ -298,12 +340,17 @@ public class HabitabberGUI extends Application {
 			}
 			Label label = new Label(labelName);			
 			label.setTextFill(Color.web("0076a3"));
-			grid.add(label, 0, hIndex);
-			grid.add(checkBox, 1, hIndex, 2, 1);
-			hIndex++;
+			grid.add(label, 0, hIndex[REGEX_TYPE]);
+			grid.add(checkBox, 1, hIndex[REGEX_TYPE], 2, 1);
+			hIndex[REGEX_TYPE]++;
 		}
-		hIndexOffset = hIndex++;		
-		grid.add(new AddRegExButton(this, grid).getButton(), 0, hIndexOffset);
+		hIndexOffset[REGEX_TYPE] = hIndex[REGEX_TYPE]++;		
+		grid.add(new AddRegExButton(this, grid).getButton(), 0, hIndexOffset[REGEX_TYPE]);
+		
+//		String regExName = "RegEx";
+//		addRegExField(grid, regExName, ".*(((0)[1-9]{2}[0-9][-]?(\\s?)[1-9][0-9]{5})|((\\+31|0|0031)[1-9][0-9][-]?[1-9][0-9]{6})).*", null);
+//		addRegExField(grid, regExName, ".*(((\\+31|0|0031)6){1}[1-9]{1}[0-9]{7}).*", null);
+//		addRegExField(grid, regExName, ".*(((0)[1-9][-]?\\s?[1-9][0-9]{2}\\s?[0-9]{5})).*", null);
 	}
 
 	public void appendOutputText(String str) {
@@ -311,13 +358,6 @@ public class HabitabberGUI extends Application {
 		//		HabitabberGUI.outputTextArea.appendText(str);
 		stage.show();
 	}
-
-	/**
-	 * @return the outputtextarea
-	 */
-//	public TextArea getOutputtextarea() {
-//		return outputTextArea;
-//	}
 
 	private static int getRowCount(GridPane pane) {
 		int numRows = pane.getRowConstraints().size();
@@ -332,13 +372,6 @@ public class HabitabberGUI extends Application {
 	}
 
 	public void setPage(Page page) {		
-
-		//		GridPane grid;
-		//		for (Node node : stage.getScene().getRoot().getChildren()) {
-		//			if (node instanceof)
-		//		}
-
-		//		grid.add(getOutputtextarea(), 3, 2, 3, 18);
 		if (getCheckboxConjunctions(page)) {
 			if (scrollPane.getContent() == null) {
 				GridPane grid = new GridPane();
@@ -413,26 +446,54 @@ public class HabitabberGUI extends Application {
 		stage.show();
 	}
 	
-	public void addRegExField(GridPane grid, String regEx) {
-		addRegExField(grid, regEx, null);
+	public void addRegExField(GridPane grid, String regExName) {
+		addRegExField(grid, regExName, null);
 	}
-
-	public void addRegExField(GridPane grid, String regEx, Integer hIndex) {
+	
+	public void addRegExField(GridPane grid, String regExName, Integer hIndex) {
+		addRegExField(grid, regExName, "", hIndex);
+	}
+	
+	public void addRegExField(GridPane grid, String regExName, String regExValue, Integer hIndex) {
 		int firstFreeHIndex;
 		if (hIndex == null) {
-			firstFreeHIndex = PapaField.retrieveFirstFreeHIndex();	
+			firstFreeHIndex = RegExField.retrieveFirstFreeHIndex();	
 		} else {
-			firstFreeHIndex = PapaField.retrieveFirstFreeHIndex(hIndex);
+			firstFreeHIndex = RegExField.retrieveFirstFreeHIndex(hIndex);
 		}
-		
+		addPapaField(grid, regExName, regExValue, hIndex, firstFreeHIndex, REGEX_TYPE);
+		if (hIndex == null) {
+			HabitabberGUI.hIndex[REGEX_TYPE]++;
+		}
+	}
+	
+	public void addCategoryField(GridPane grid, String regExName, String regExValue, Integer hIndex) {
+		int firstFreeHIndex;
+		if (hIndex == null) {
+			firstFreeHIndex = CategoryField.retrieveFirstFreeHIndex();	
+		} else {
+			firstFreeHIndex = CategoryField.retrieveFirstFreeHIndex(hIndex);
+		}
+		addPapaField(grid, regExName, regExValue, hIndex, firstFreeHIndex, CATEGORY_TYPE);
+		if (hIndex == null) {
+			HabitabberGUI.hIndex[CATEGORY_TYPE]++;
+		}
+	}
+	
+	public void addPapaField(GridPane grid, String regExName, String regExValue, Integer hIndex, int firstFreeHIndex, int type) {
 		List<Node> nodeList = new ArrayList<Node>();
 		String name = "" + firstFreeHIndex;
-		RegExField regExField = new RegExField(name, "");
+		
+		BabyField babyField = null;
+		if (type == CATEGORY_TYPE)
+			babyField = new CategoryField(name, regExValue);
+		else
+			babyField = new RegExField(name, regExValue);
 		//		regExFieldList.add(regExField);
-		Label label = new Label(regEx + " " + (firstFreeHIndex - getHIndexOffset()));		
+		Label label = new Label(regExName + " " + (firstFreeHIndex - getHIndexOffset(type)));		
 		label.setTextFill(Color.web("0076a3"));
 		grid.add(label, 0, firstFreeHIndex);
-		grid.add(regExField.getTextField(), 1, firstFreeHIndex);
+		grid.add(babyField.getTextField(), 1, firstFreeHIndex);
 
 		Image removeIcon = new Image(HabitabberGUI.class.getResourceAsStream("/view/delete.png"));
 		RemoveButton removeButton = new RemoveButton(name, new RemoveAction(this, name));
@@ -440,20 +501,100 @@ public class HabitabberGUI extends Application {
 		removeButton.getButton().setGraphic(new ImageView(removeIcon));
 		grid.add(removeButton.getButton(), 2, firstFreeHIndex);
 		nodeList.add(label);
-		nodeList.add(regExField.getTextField());
+		nodeList.add(babyField.getTextField());
 		nodeList.add(removeButton.getButton());
-		regExField.setRegExRowNodes(nodeList);
-		regExField.setHIndex(firstFreeHIndex);
-		if (hIndex == null) {
-			HabitabberGUI.hIndex++;
-		}
+		babyField.setRegExRowNodes(nodeList);
+		babyField.setHIndex(firstFreeHIndex);		
 	}
 
-	public static int getHIndexOffset() {
-		return hIndexOffset;
+	public static int getHIndexOffset(int type) {
+		return hIndexOffset[type];
 	}
 
 	public Stage getStage() {
 		return stage;
 	}
+	
+	
+	
+	
+	
+	
+	
+
+	    private Task<Void> createTask() {	    		    	
+	    	
+	        return new Task<Void>() {
+	            @Override public Void call() {
+	                while (MainSearcher.COUNTER < MainSearcher.MAX_SITES) {
+	                    if (isCancelled()) {
+	                        break;
+	                    }
+	                    updateMessage((MainSearcher.MAX_SITES - MainSearcher.COUNTER) + "");
+	                    try {
+	                        Thread.sleep(100);
+	                    } catch (InterruptedException e) {
+	                        return null;
+	                    }
+	                }
+
+	                updateMessage(0 + "");
+	                updateProgress(MainSearcher.MAX_SITES, MainSearcher.MAX_SITES);
+
+	                return null;
+	            }
+	        };
+	    }
+
+	    private HBox createLayout(Task<Void> task) {
+	        HBox layout = new HBox(10);
+
+	        layout.getChildren().setAll(
+	            createProgressIndicator(task),
+	            createCounter(task)
+	        );
+
+	        layout.setAlignment(Pos.CENTER_RIGHT);
+	        layout.setPadding(new Insets(10));
+
+	        return layout;
+	    }
+
+	    private ProgressIndicator createProgressIndicator(Task<Void> task) {
+	        ProgressIndicator progress = new ProgressIndicator();
+
+	        progress.progressProperty().bind(task.progressProperty());
+
+	        return progress;
+	    }
+
+	    private Label createCounter(Task<Void> task) {
+	        Label counter = new Label();
+
+	        counter.setMinWidth(20);
+	        counter.setAlignment(Pos.CENTER_RIGHT);
+	        counter.textProperty().bind(task.messageProperty());
+	        counter.setStyle("-fx-border-color: forestgreen;");
+
+	        return counter;
+	    }
+	    
+	    public void startProgressIndicator() {
+	    	progressIndicatorStage = new Stage();
+	    	progressIndicatorStage.getIcons().add(HABITABBER_ICON);
+	    	progressIndicatorStage.setTitle("Progress indicator");
+			Task<Void> task = createTask();
+
+			progressIndicatorStage.setScene(
+	            new Scene(
+	                createLayout(
+	                    task
+	                )
+	            )
+	        );
+			progressIndicatorStage.show();
+	        
+	        new Thread(task).start();
+	    }
+	
 }

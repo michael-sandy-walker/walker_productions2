@@ -4,8 +4,8 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.layout.GridPane;
 import view.HabitabberGUI;
+import view.field.BabyField;
 import view.field.PapaField;
-import view.field.RegExField;
 
 public class RemoveAction extends PapaAction {
 	
@@ -18,7 +18,7 @@ public class RemoveAction extends PapaAction {
 	
 	@Override
 	public void performAction() {
-		RegExField field = (RegExField) PapaField.getFieldMap().get(name);
+		BabyField field = (BabyField) PapaField.getFieldMap().get(name);
 		Parent parent = field.getTextField().getParent(); // Grid
 		GridPane grid = (GridPane) parent;
 		for (Node node : field.getRegExRowNodes()) {

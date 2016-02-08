@@ -3,6 +3,7 @@ package controller;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -70,7 +71,7 @@ public class MainSearcher {
 	//	public final static Pattern p3 = Pattern.compile(".*(((0)[1-9][-]?\\s?[1-9][0-9]{2}\\s?[0-9]{5})).*");
 
 	public static int MAX_SITES = 1000;
-	public static int counter = 0;
+	public static int COUNTER = 0;
 
 	public String testStr = "http://www.marktplaats.nl/a/huizen-en-kamers/huizen-te-huur/m925913694-woning-te-huur-in-ijmuiden.html?c=efb2ef4dc323389c4f92ed10afa33e3a&previousPage=lr";
 
@@ -88,7 +89,7 @@ public class MainSearcher {
 	private static boolean stop;
 
 	private static String[] pageArr;
-
+	
 	IOSingleton io;
 	static {
 		logger.setLevel(Level.INFO);
@@ -213,7 +214,7 @@ public class MainSearcher {
 	public void terminate() {
 		if (io != null) {
 			io.reset(true);
-			counter = 0;
+			COUNTER = 0;
 			setStop(true);
 			if (io != null) {
 				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
@@ -281,12 +282,10 @@ public class MainSearcher {
 		return result;
 	}
 
-
-
 	public Page generateTree(String... argv) {		
 		Page result = null;
 		for (String str : argv) {			
-			counter = 0;
+			COUNTER = 0;
 			UrlToken token = new UrlToken(str);
 			tokenList.add(token);
 			result = performSearch(token);
@@ -311,7 +310,7 @@ public class MainSearcher {
 
 		if (logger.getLevel().equals(Level.INFO)) {
 			System.out.print(">");		
-			if (counter != 0 && counter%60 == 0) {
+			if (COUNTER != 0 && COUNTER%60 == 0) {
 				System.out.println("");
 			}
 		}
@@ -331,8 +330,8 @@ public class MainSearcher {
 			for (SubPage subPage : page.getSubPageList()) {
 				logger.finest("subPage: " + subPage.getUrl());
 				// 4.) if link of current node is not within visitedList
-				if (!visitedLinkList.contains(subPage.getUrl()) && counter < MAX_SITES && !isStop()) {
-					counter++;					
+				if (!visitedLinkList.contains(subPage.getUrl()) && COUNTER < MAX_SITES && !isStop()) {
+					COUNTER++;					
 					// 5.) repeat steps
 					try {
 						performSearch(new UrlToken(subPage.getUrl()), true);
@@ -376,15 +375,21 @@ public class MainSearcher {
 	public Page retrievePage(String url, boolean subPage) {			
 		Page result = new Page();
 		try {
-			String content = "";
+			StringBuffer content = new StringBuffer();
 			if (url != null && !url.isEmpty()) {
 				webFile = new WebFile(url);
 				if (webFile.getContent() != null) {
-					content = webFile.getContent().toString();
+					Object contentObj = webFile.getContent();					
+					if (contentObj instanceof byte[]) { // TODO: write better mechanism to retrieve the charset (e.g., Facebook apparently doesn't give information about it) 
+						byte[] contentByte = (byte[]) contentObj;
+						content.append(new String(contentByte, StandardCharsets.UTF_8)); 
+					}
+					else
+						content.append(webFile.getContent().toString());
 				}
 			}
 
-			result = PageFactory.getPage(content, subPage);
+			result = PageFactory.getPage(content.toString(), subPage);
 			result.setUrl(url);
 
 			return result;

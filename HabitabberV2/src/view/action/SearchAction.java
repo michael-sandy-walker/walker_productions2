@@ -60,7 +60,11 @@ public class SearchAction extends PapaAction {
 				}
 			}
 		}
-		task = new SearchTask(argList.toArray(new String[argList.size()]));
+		
+		gui.startProgressIndicator();
+		
+		task = new SearchTask(argList.toArray(new String[argList.size()]));		
+		
 		taskPool.add(task);
 		setService(new SearchService());
 		getService().setOnSucceeded(new EventHandler<WorkerStateEvent>() {
@@ -70,12 +74,13 @@ public class SearchAction extends PapaAction {
 				System.out.println("Done.");
 			}
 		});
-		service.start();
+		service.start();		
 	}
 
 	public class SearchTask extends Task<Void> {
 
 		String[] argv;
+		
 		public SearchTask(String[] argv) {
 			this.argv = argv;
 		}

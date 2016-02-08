@@ -3,8 +3,8 @@ package view.field;
 import java.util.Map;
 import java.util.TreeMap;
 
-import view.HabitabberGUI;
 import javafx.scene.control.TextField;
+import view.HabitabberGUI;
 
 public class PapaField {
 	private TextField textField;
@@ -55,40 +55,48 @@ public class PapaField {
 	}
 	
 	public static int retrieveFirstFreeHIndex() {		
-		return retrieveFirstFreeHIndex(HabitabberGUI.getHIndexOffset());
+		return retrieveFirstFreeHIndex(HabitabberGUI.getHIndexOffset(HabitabberGUI.REGEX_TYPE));
 	}
 
 	public static int retrieveFirstFreeHIndex(int index) {
+		return retrieveFirstFreeHIndex(index, fieldMap);
+	}
+	
+	public static int retrieveFirstFreeHIndex(Map<String, PapaField> fieldMap) {		
+		return retrieveFirstFreeHIndex(HabitabberGUI.getHIndexOffset(HabitabberGUI.REGEX_TYPE), fieldMap);
+	}
+	
+	public static int retrieveFirstFreeHIndex(int index, Map<String, PapaField> fieldMap) {		
 		int freeHIndex = index + 1;
 		Integer prevHIndex = null;
 
 		Map<Integer, PapaField> orderedMap = new TreeMap<Integer, PapaField>();
 
-		for (Map.Entry<String, PapaField> entry : getFieldMap().entrySet()) {
+		for (Map.Entry<String, PapaField> entry : fieldMap.entrySet()) {
 			PapaField field = (PapaField) entry.getValue();
-			if (field instanceof RegExField) {
+			if (field instanceof BabyField) {
 				orderedMap.put(Integer.parseInt(entry.getKey()), entry.getValue());
 			}			
 		}
 
 		for (PapaField field : orderedMap.values()) {
-			if (field instanceof RegExField) {
-				RegExField regExField = (RegExField) field;				
+			if (field instanceof BabyField) {
+				BabyField babyField = (BabyField) field;				
 				if (prevHIndex == null) {
-					prevHIndex = regExField.getHIndex();
+					prevHIndex = babyField.getHIndex();
 					if (prevHIndex > freeHIndex) {
 						break;
 					}
 				}				
 
-				if (regExField.getHIndex() > prevHIndex + 1) {
+				if (babyField.getHIndex() > prevHIndex + 1) {
 					freeHIndex = prevHIndex + 1;
 					break;
 				} else {
 					freeHIndex++;
 				}
 
-				prevHIndex = regExField.getHIndex();
+				prevHIndex = babyField.getHIndex();
 			}
 		}
 		return freeHIndex;

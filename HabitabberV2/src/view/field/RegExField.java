@@ -1,33 +1,24 @@
 package view.field;
 
-import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
-import javafx.scene.Node;
+import view.HabitabberGUI;
 
-public class RegExField extends PapaField {
+public class RegExField extends BabyField {
 	
-	List<Node> nodeList;
-	
-	int hIndex;
+	private static 	Map<String, PapaField> fieldMap = new TreeMap<String, PapaField>();
 
 	public RegExField(String name, String text) {
 		super(name, text);
+		RegExField.fieldMap.put(name, this);
+	}
+			
+	public static int retrieveFirstFreeHIndex() {
+		return RegExField.retrieveFirstFreeHIndex(HabitabberGUI.getHIndexOffset(HabitabberGUI.REGEX_TYPE));
 	}
 	
-	public void setRegExRowNodes(List<Node> nodeList) {
-		this.nodeList = nodeList;
+	public static int retrieveFirstFreeHIndex(int index) {
+		return retrieveFirstFreeHIndex(index, fieldMap);
 	}
-	
-	public List<Node> getRegExRowNodes() {
-		return nodeList;
-	}
-	
-	public void setHIndex(int hIndex) {
-		this.hIndex = hIndex;
-	}
-	
-	public int getHIndex() {
-		return hIndex;
-	}
-
 }

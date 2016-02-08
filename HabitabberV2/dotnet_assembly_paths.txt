@@ -1,0 +1,1 @@
+<probing privatePath="PublicAssemblies;PrivateAssemblies;CommonExtensions\Microsoft\TemplateProviders;CommonExtensions\Platform\Debugger;PrivateAssemblies\DataCollectors;PrivateAssemblies\DataCollectors\x86"/>
