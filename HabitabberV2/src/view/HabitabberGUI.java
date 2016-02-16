@@ -237,35 +237,45 @@ public class HabitabberGUI extends Application {
         grid.add(categoryValueLabel,0,1,1,1);        
         TextField categoryValue = new TextField("Value");        
         grid.add(categoryValue,1,1,1,1);               
-		
-		 Button saveButton = new Button("Save");
-		 saveButton.setOnAction(new EventHandler<ActionEvent>() {
 
-				@Override
-				public void handle(ActionEvent event) {
-					integrateCategory(categoryName.getText(), categoryValue.getText());
-				}
-			});
-			grid.add(saveButton,1,2,2,1);
-			
-			 Button button = new Button("Add category");
-				button.setOnAction(new EventHandler<ActionEvent>() {
+        Button saveButton = new Button("Save");
+        saveButton.setOnAction(new EventHandler<ActionEvent>() {
 
-					@Override
-					public void handle(ActionEvent event) {
-						addCategoryField(grid, "Category", "", 4);
-					}
-				});
-				grid.add(button,1,3,2,1);
-      
+        	@Override
+        	public void handle(ActionEvent event) {
+        		integrateCategory(PapaField.getFieldMapByIdType(CategoryField.class));
+        	}
+        });
+        grid.add(saveButton,1,2,2,1);
+        
+        int indexOffset = 4;
+
+        Button button = new Button("Add category");
+        button.setOnAction(new EventHandler<ActionEvent>() {
+
+        	@Override
+        	public void handle(ActionEvent event) {
+        		addCategoryField(grid, "Category", "", indexOffset);
+        	}
+        });
+        grid.add(button,1,3,2,1);
+
+        reinitializePapaFields(grid, PapaField.getFieldMapByIdType(CategoryField.class));
+
         myDialog.setScene(myDialogScene);        
-		
-		myDialog.show();	
+
+        myDialog.show();	
 	}
 	
 	public void integrateCategory(String name, String value) {
 		MainSearcher mainSearcher = MainSearcher.getSingleton(this, null);
 		mainSearcher.addCategory(name, value);
+	}
+	
+	public void integrateCategory(Map<String, PapaField> fieldMap) {
+		MainSearcher mainSearcher = MainSearcher.getSingleton(this, null);
+		for (String key : fieldMap.keySet()) 
+			mainSearcher.addCategory("Category " + key.substring(key.indexOf(PapaField.SEPARATOR) + PapaField.SEPARATOR.length()), fieldMap.get(key).getTextField().getText());
 	}
 
 	public void initForm(GridPane grid) {
@@ -328,6 +338,10 @@ public class HabitabberGUI extends Application {
 		for (String str : new String[]{"description","media"}) {
 			CheckBox checkBox = new CheckBox();
 			checkBox.setSelected(true);
+			if (str.equals("media"))
+				checkBox.setSelected(false);
+			checkBoxMap.put(str, checkBox.isSelected());
+			
 			checkBox.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(ActionEvent event) {
@@ -397,8 +411,10 @@ public class HabitabberGUI extends Application {
 			innerGrid.add(hyperlink, 0, rowCount);
 			int index = 1;
 			for (String key : page.getContent().keySet()) {
-				showContent(key, page, innerGrid, index, rowCount);
-				index++;
+				if (checkBoxMap.get(key) == null || checkBoxMap.get(key)) {
+					showContent(key, page, innerGrid, index, rowCount);
+					index++;
+				}
 			}
 //			showContent("tel", page, innerGrid, 1, rowCount);
 //			showContent("price", page, innerGrid, 2, rowCount);
@@ -506,6 +522,28 @@ public class HabitabberGUI extends Application {
 		nodeList.add(removeButton.getButton());
 		babyField.setRegExRowNodes(nodeList);
 		babyField.setHIndex(firstFreeHIndex);		
+		babyField.setRemoveButton(removeButton);
+		babyField.setLabel(label);
+	}
+	
+	public void reinitializePapaFields(GridPane grid, Map<String, PapaField> fieldMap) {
+		for (String key : fieldMap.keySet()) {
+			PapaField papaField = fieldMap.get(key);
+			if (papaField instanceof BabyField) {
+				BabyField babyField =  (BabyField)fieldMap.get(key);
+				int hIndex = babyField.getHIndex();
+				Label label = babyField.getLabel();
+				label.setTextFill(Color.web("0076a3"));
+				grid.add(label, 0, hIndex);
+				grid.add(babyField.getTextField(), 1, hIndex);
+
+				Image removeIcon = new Image(HabitabberGUI.class.getResourceAsStream("/view/delete.png"));
+				RemoveButton removeButton = babyField.getRemoveButton();
+				removeButton.getButton().setText("");
+				removeButton.getButton().setGraphic(new ImageView(removeIcon));
+				grid.add(removeButton.getButton(), 2, hIndex);
+			}
+		}
 	}
 
 	public static int getHIndexOffset(int type) {

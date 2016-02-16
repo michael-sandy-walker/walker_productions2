@@ -65,6 +65,16 @@ public abstract class PapaField {
 		return fieldMap;
 	}
 	
+	public static Map<String, PapaField> getFieldMapByIdType(Class<?> clazz) {
+		Map<String, PapaField> subMap = new TreeMap<String, PapaField>();;
+		
+		for (String key : fieldMap.keySet())
+			if (key.contains(clazz.getSimpleName()))
+				subMap.put(key, fieldMap.get(key));
+		
+		return subMap;
+	}
+	
 	public static int retrieveFirstFreeHIndex(int type) {		
 		return retrieveFirstFreeHIndex(HabitabberGUI.getHIndexOffset(type), type);
 	}

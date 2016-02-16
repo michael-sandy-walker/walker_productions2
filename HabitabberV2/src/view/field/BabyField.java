@@ -2,7 +2,9 @@ package view.field;
 
 import java.util.List;
 
+import view.button.RemoveButton;
 import javafx.scene.Node;
+import javafx.scene.control.Label;
 
 public abstract class BabyField extends PapaField {
 	
@@ -11,6 +13,10 @@ public abstract class BabyField extends PapaField {
 	int hIndex;
 	
 	private final int type;
+	
+	private RemoveButton removeButton;
+	
+	private Label label;
 	
 	public BabyField(String name, String text, int type) {
 		super(name, text);
@@ -39,5 +45,21 @@ public abstract class BabyField extends PapaField {
 	 */
 	public int getType() {
 		return type;
+	}
+	
+	public void setRemoveButton(RemoveButton removeButton) {
+		this.removeButton = removeButton;
+	}
+	
+	public RemoveButton getRemoveButton() {
+		return removeButton;
+	}
+	
+	public void setLabel(Label label) {
+		this.label = label;
+	}
+	
+	public Label getLabel() {
+		return label;
 	}
 }
