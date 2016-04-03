@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyStore.Entry.Attribute;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -324,13 +325,12 @@ public class MainSearcher {
 		if (page != null) {			
 			if (doImmediateParse)
 				parseContent(page);
-
 			addLinksToPage(page);
 			// 3.) iterate through current tree level 
 			for (SubPage subPage : page.getSubPageList()) {
 				logger.finest("subPage: " + subPage.getUrl());
 				// 4.) if link of current node is not within visitedList
-				if (!visitedLinkList.contains(subPage.getUrl()) && COUNTER < MAX_SITES && !isStop()) {
+				if (/*!visitedLinkList.contains(subPage.getUrl()) &&*/ COUNTER < MAX_SITES && !isStop()) {
 					COUNTER++;					
 					// 5.) repeat steps
 					try {
@@ -415,7 +415,7 @@ public class MainSearcher {
 					e.printStackTrace();
 				}
 			}			
-			if (containsString(linkStr)) {				
+			if (visitedLinkList.add(linkStr) && containsString(linkStr)) {		
 				SubPage result = new SubPage();	
 				result.setUrl(linkStr);
 				logger.fine("Adding link to page " + page.getUrl() + ": " + linkStr);
@@ -495,9 +495,21 @@ public class MainSearcher {
 				String categoryValue = categoryMap.get(categoryName);
 				Elements elements = doc.select(categoryValue);
 				for (Element element : elements) {
-					if (element.text() != null && element.text().isEmpty()) {
+					if (element.text() != null && !element.text().isEmpty()) {
 						page.setContent(categoryName, element.text());
+					} else if (element.attributes() != null && (element.attributes().size() > 0)) {
+						for (org.jsoup.nodes.Attribute attribute : element.attributes().asList()) 
+							if (attribute.getKey().equals("src"))
+								page.setSource(categoryName, attribute.getValue());
 					}
+				}
+			}
+			
+			if (page.getDescription() == null && !page.getDescription().hasText()) {
+				Elements desc = doc.select("title");
+				for (Element element : desc) {
+					page.setDescription(element);
+					page.setContent("description", element);
 				}
 			}
 

@@ -39,6 +39,13 @@ public class PopupAction extends PapaAction {
         		html += "<img src=\"" + o.toString() + "\">";
         	}
         }
+        
+        for (String srcKey : page.getSource().keySet()) {
+        	html += srcKey + ":";
+        	for (String srcVal : page.getSource().get(srcKey))
+        		html += "<img src=\"" + srcVal + "\">";
+        }
+        
         if (page.getDescription() != null) {
         	html += page.getDescription().text();
         	System.out.println("description: " + page.getDescription().text());

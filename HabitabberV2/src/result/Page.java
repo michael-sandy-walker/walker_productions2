@@ -18,6 +18,8 @@ public class Page {
 	protected List<SubPage> subPageList = new ArrayList<SubPage>();
 	
 	private Element description;
+	
+	private Map<String, List<String>> source;
 
 	public Page() {
 		unparsedContent = "";
@@ -83,6 +85,30 @@ public class Page {
 
 	public void setDescription(Element description) {
 		this.description = description;
+	}
+
+	/**
+	 * @return the source
+	 */
+	public Map<String, List<String>> getSource() {
+		return source;
+	}
+
+	/**
+	 * @param source the source to set
+	 */
+	public void setSource(Map<String, List<String>> source) {
+		this.source = source;
+	}
+	
+	public void setSource(String key, String value) {
+		if (source == null)
+			source = new TreeMap<String, List<String>>();
+		List<String> list = new ArrayList<String>();
+		if (source.get(key) != null) 				
+			list = source.get(key);			
+		list.add(value);
+		source.put(key, list);		
 	}
 
 }

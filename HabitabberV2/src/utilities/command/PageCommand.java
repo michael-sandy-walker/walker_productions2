@@ -11,6 +11,10 @@ public class PageCommand extends Command {
 		super(name, value);
 		pageList = new ArrayList<String>();
 		for (String v : value.split(PageCommand.DELIMITER)) {
+//			if (!v.startsWith("http")) {
+//				v = "http://" + v;
+//				super.setValue(v);
+//			}
 			pageList.add(v);
 		}	
 	}
