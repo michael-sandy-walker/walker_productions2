@@ -1,4 +1,4 @@
-package model.cards;
+                                                           package model.cards;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,8 +55,7 @@ public class Deck extends Group{
 	}
 	
 	public void addCardToDrawStack(Card card){
-		if (card.getPreviousCardContainer() == null || card.getPreviousCardContainer().isEmpty())
-			card.setPreviousCardContainer(drawStack);
+		card.setPreviousCardContainer(drawStack);
 		drawStack.addCard(card);
 	}
 	
@@ -71,7 +70,7 @@ public class Deck extends Group{
 			System.out.println("shuffle "+discardStack.getCards().size());
 			for(Card cardToMove:discardStack.getCards()){
 //				cardToMove.flipCard(false);
-				addCardToDrawStack(cardToMove);
+				drawStack.addCard(cardToMove);
 				cardToMove.moveCardTo(drawStack.getX(), drawStack.getY(), 0);
 			}
 			discardStack.setCards(new ArrayList<Card>());
@@ -91,7 +90,7 @@ public class Deck extends Group{
 	
 	public void shuffleDrawStack(){
 		Collections.shuffle(drawStack.getCards(), Player.getRandom());
-		drawStack.getCard(0).setVisible(true);;
+		drawStack.getCard(0).setVisible(true);
 	}
 	
 	public Arrow getArrow(){

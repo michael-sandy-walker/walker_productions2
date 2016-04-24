@@ -34,16 +34,15 @@ public class GamePieceContainer {
 		piece.setContainer(this);
 		if(piece.isChit()){
 			chits.add(piece);
-			piece.moveTo(placeOnPlayfieldX, placeOnPlayfieldY);
-//			if(piece instanceof Gangster){
-//				owner = ((Gangster) piece).getPlayer();
-//			}
+			if(Player.getReadyFlag())
+				piece.moveTo(placeOnPlayfieldX, placeOnPlayfieldY);
 		} else{
 			this.gamePieces.add((GamePiece) piece);
 			if(piece instanceof Police){
 				System.out.println("Politie");
 			}
-			recalculate();
+			if(Player.getReadyFlag())
+				recalculate();
 		}
 	}
 	
@@ -134,7 +133,7 @@ public class GamePieceContainer {
 		}
 	}
 	
-	private void recalculate(){
+	public void recalculate(){
 		int total = gamePieces.size();
 		int rad;
 		if(total<radius.length){
