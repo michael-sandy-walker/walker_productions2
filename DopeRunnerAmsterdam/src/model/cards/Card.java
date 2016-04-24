@@ -446,6 +446,9 @@ public class Card{
 	public void setPreviousCardContainer(CardContainer container){
 		previousCardContainer = container;
 	}
+	public CardContainer getPreviousCardContainer(){
+		return previousCardContainer;
+	}
 	public void setCardContainer(CardContainer container){
 		cardContainer = container;
 	}

@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+import network.ChatMessage;
 import network.DopeMain;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
@@ -60,6 +61,9 @@ public class DopeGUI extends Application implements PlayerOrientationConverter{
 	
 //	private long randomScramble;
 	
+	private Deck deck1;
+	private Deck deck2;
+	
 	public DopeGUI(int playerID, List<Color> playerColors, List<String> names, long randomScramble, DopeMain networkController){
 		
 	}
@@ -101,15 +105,15 @@ public class DopeGUI extends Application implements PlayerOrientationConverter{
 //		
 //		playField.add(btn_endTurn);
 		
-		Deck deck = new Deck(476, 112, 476, 6, true);
+		deck1 = new Deck(476, 112, 476, 6, true);
 		int[] cardFrequencyRegular = {  5,       5, 	   5,      5,     5,    5,       10,        6,          6,         6};
 		String[] cardNamesRegular = {"Purple","Orange","Yellow","Green","Blue","Red","Rainbow","PurpleHaze","OrangeBud","Top44"};
-		addCards(cardFrequencyRegular,cardNamesRegular, deck);
+		addCards(cardFrequencyRegular,cardNamesRegular, deck1);
 		
-		deck = new Deck(550, 112, 550, 6, false);
+		deck2 = new Deck(550, 112, 550, 6, false);
 		int[] cardFrequencyAdvanced ={   2,       2,       2,         2,       2,     2,         2,             4          , 4,          4};
 		String[] cardNamesAdvanced = {"PurpleRainbow","OrangeRainbow","YellowRainbow","GreenRainbow","BlueRainbow","RedRainbow","RainbowRainbow","Hiya","Afghan","Shiva"};
-		addCards(cardFrequencyAdvanced,cardNamesAdvanced, deck);
+		addCards(cardFrequencyAdvanced,cardNamesAdvanced, deck2);
 		
 		GamePieceContainer hashTokenBase = new GamePieceContainer(300, 30);
 		for(int i=0;i<5;i++){
@@ -249,9 +253,21 @@ public class DopeGUI extends Application implements PlayerOrientationConverter{
 			}
 		});
 		
+		Button btn_click2 = new Button("Draw stack");
+		btn_click2.setOnAction(new EventHandler<ActionEvent>(){
+			@Override
+			public void handle(ActionEvent event) {
+				System.out.println("SHUFFLE");
+				Player.getDeck(true).shuffleDrawStack();
+				Player.getNetworkController().sendMessage(new ChatMessage(ChatMessage.SHUFFLE));
+			}
+		});
+		
 
 		btn_click.setEffect(ds);
 		playField.add(btn_click);
+		btn_click2.setEffect(ds);
+		playField.add(btn_click2);
 		root = new BorderPane();
 //		playField.setTranslateX(170);
 		root.getChildren().addAll(playField);

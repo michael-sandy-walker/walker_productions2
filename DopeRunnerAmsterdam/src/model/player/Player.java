@@ -193,7 +193,6 @@ public class Player implements PlayerOrientationConverter{
 //		playField.add(card.getCard());
 		if(activePlayer == controllingPlayer)
 			networkController.sendMessage(new ChatMessage(ChatMessage.DISCARDCARD, card.getCardID(),0,0));
-		card.getCard().setMouseTransparent(true);
 		Player playerOld = ((PlayerCards)card.getCardContainer()).getPlayer();
 		playerOld.setHasDoneAnything(true);
 		playerOld.removeCard(card);
@@ -433,8 +432,6 @@ public class Player implements PlayerOrientationConverter{
 			cardsToChooseFrom.add(dealCardTo(activePlayer,true));
 			for(Card card : cardsToChooseFrom){
 				card.setStrokeColor(Card.getChoicecolor());
-				if(activePlayer == controllingPlayer)
-					card.getCard().setMouseTransparent(false);
 			}
 			busyFlag = false;
 			Card.setClickReason(Card.CHOOSECARD);
@@ -499,11 +496,6 @@ public class Player implements PlayerOrientationConverter{
 			setActivePlayer(playerNew);
 			for(Card cardToPass: cardsToChooseFrom){
 				moveCardTo(cardToPass, playerNew);
-				if(activePlayer == controllingPlayer)
-					cardToPass.getCard().setMouseTransparent(false);
-//				if(playerNew!=Player.getChoosingPlayer() && !playerNew.isAI()){
-//					cardToPass.setMouseTransparent(false);
-//				}
 			}
 //			activePlayer.doSomething();
 		}

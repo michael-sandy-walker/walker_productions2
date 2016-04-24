@@ -55,7 +55,8 @@ public class Deck extends Group{
 	}
 	
 	public void addCardToDrawStack(Card card){
-		card.setPreviousCardContainer(drawStack);
+		if (card.getPreviousCardContainer() == null || card.getPreviousCardContainer().isEmpty())
+			card.setPreviousCardContainer(drawStack);
 		drawStack.addCard(card);
 	}
 	
@@ -70,8 +71,8 @@ public class Deck extends Group{
 			System.out.println("shuffle "+discardStack.getCards().size());
 			for(Card cardToMove:discardStack.getCards()){
 //				cardToMove.flipCard(false);
-				cardToMove.moveCardTo(drawStack.getX(), drawStack.getY(), 0);
 				addCardToDrawStack(cardToMove);
+				cardToMove.moveCardTo(drawStack.getX(), drawStack.getY(), 0);
 			}
 			discardStack.setCards(new ArrayList<Card>());
 			card = drawStack.getCard(0);

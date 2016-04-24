@@ -17,7 +17,7 @@ public class ChatMessage implements Serializable {
 	// LOGOUT to disconnect from the Server
 	public static final int WHOISIN = 0, MESSAGE = 1, LOGOUT = 2, START_GAME = 3, SELECTCARD = 4, DEALREGULARCARD = 5, 
 			DEALADVANCEDCARD = 6, DISCARDCARD = 7, MOVECARD = 8, PLACEPOLICE = 9, REMOVEPOLICE = 10, MOVEPAWN = 11, 
-			GROWPAWN = 12, MAKEDEAL = 13, DIETHROWN = 14, CARDCHOSEN = 15, FLIPGOAL = 16, THROWAWAYCARDS = 17, ENDTURN = 18, READY =19;
+			GROWPAWN = 12, MAKEDEAL = 13, DIETHROWN = 14, CARDCHOSEN = 15, FLIPGOAL = 16, THROWAWAYCARDS = 17, ENDTURN = 18, READY =19, SHUFFLE = 20;
 	private int type;
 	private String message;
 	private int cardId;

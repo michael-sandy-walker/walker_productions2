@@ -150,6 +150,10 @@ public class DopeMain extends Thread{
 			Player.setBusyFlag(true);
 			Player.getActivePlayer().throwAwayCards(Player.getPlayer(chatMsg.getPlayerId()));
 			break;
+		case ChatMessage.SHUFFLE:
+			System.out.println("SHUFFLE");
+			Player.getDeck(true).shuffleDrawStack();
+			break;
 		default: 
 			System.out.println("SOMETHING ELSE");
 			break;
