@@ -114,7 +114,7 @@ public class PlayerCards extends CardContainer implements PlayerOrientationConve
 			Point2D offcenter = convertToPlayerOrientation(anchorPointX+placeOnCircleX, anchorPointY+placeOnCircleY, orientation);
 			card.setRotation(-60+rotation+orientation);
 			i++;
-			card.moveCardTo(getX() + offcenter.getX(), getY() + offcenter.getY(), frontUp, card.getRotation());
+			card.moveCardTo(getX() + offcenter.getX(), getY() + offcenter.getY(), card.getRotation());
 		}
 	}
 	public Integer getOffCenterX(Card card) {

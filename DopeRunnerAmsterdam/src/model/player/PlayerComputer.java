@@ -28,6 +28,8 @@ public class PlayerComputer extends Player{
 	protected void chooseGangster(List<Tramstop> tramstopsToChooseFrom){
 		// TODO make a better choice
 		Tramstop chosenTramstop = tramstopsToChooseFrom.get(random.nextInt(tramstopsToChooseFrom.size()));
+		Card.setClickReason(Card.SELECT);
+		System.out.println("tramstop chosen by computer: "+chosenTramstop.getTramstopID());
 		if(chosenTramstop.hasPolice()){
 			removePolice(chosenTramstop);
 		} else{

@@ -31,9 +31,6 @@ public class PlayerHuman extends Player{
 	
 	@Override
 	public void throwDie(){
-		// TODO lelijk
-//		playField.remove(btn_endTurn);
-//		playField.add(btn_endTurn);
 		setHasTraveled(false);
 		System.out.println("throwDie");
 		Card.setClickReason(Card.THROWDIE);

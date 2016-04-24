@@ -233,7 +233,7 @@ public class Card{
 			timeline = new Timeline();
 		}
 	}
-	public void moveCardTo(double x, double y, boolean visable, double rotation){
+	public void moveCardTo(double x, double y, double rotation){
 		numberOfCardsMoving++;
 		if(previousCardContainer != cardContainer){
 			if(frontUp && !cardContainer.isFrontUp())

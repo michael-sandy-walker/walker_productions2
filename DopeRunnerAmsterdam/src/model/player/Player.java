@@ -442,7 +442,7 @@ public class Player implements PlayerOrientationConverter{
 ////			boatSteps = 4;
 			break;
 		case "gangster":
-			if(activePlayer == controllingPlayer){
+			if(activePlayer == controllingPlayer || activePlayer instanceof PlayerComputer){
 				List<Tramstop> tramstopsToChooseFrom = tramstopsToChooseFromPolice();
 				chooseGangster(tramstopsToChooseFrom);
 			}
