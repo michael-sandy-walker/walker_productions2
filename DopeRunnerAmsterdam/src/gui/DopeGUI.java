@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import network.ChatMessage;
 import network.DopeMain;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
@@ -61,9 +60,6 @@ public class DopeGUI extends Application implements PlayerOrientationConverter{
 	
 //	private long randomScramble;
 	
-	private Deck deck1;
-	private Deck deck2;
-	
 	public DopeGUI(int playerID, List<Color> playerColors, List<String> names, long randomScramble, DopeMain networkController){
 		
 	}
@@ -105,15 +101,15 @@ public class DopeGUI extends Application implements PlayerOrientationConverter{
 //		
 //		playField.add(btn_endTurn);
 		
-		deck1 = new Deck(476, 112, 476, 6, true);
+		Deck deck = new Deck(476, 112, 476, 6, true);
 		int[] cardFrequencyRegular = {  5,       5, 	   5,      5,     5,    5,       10,        6,          6,         6};
 		String[] cardNamesRegular = {"Purple","Orange","Yellow","Green","Blue","Red","Rainbow","PurpleHaze","OrangeBud","Top44"};
-		addCards(cardFrequencyRegular,cardNamesRegular, deck1);
+		addCards(cardFrequencyRegular,cardNamesRegular, deck);
 		
-		deck2 = new Deck(550, 112, 550, 6, false);
+		deck = new Deck(550, 112, 550, 6, false);
 		int[] cardFrequencyAdvanced ={   2,       2,       2,         2,       2,     2,         2,             4          , 4,          4};
 		String[] cardNamesAdvanced = {"PurpleRainbow","OrangeRainbow","YellowRainbow","GreenRainbow","BlueRainbow","RedRainbow","RainbowRainbow","Hiya","Afghan","Shiva"};
-		addCards(cardFrequencyAdvanced,cardNamesAdvanced, deck2);
+		addCards(cardFrequencyAdvanced,cardNamesAdvanced, deck);
 		
 		GamePieceContainer hashTokenBase = new GamePieceContainer(300, 30);
 		for(int i=0;i<5;i++){
@@ -192,7 +188,7 @@ public class DopeGUI extends Application implements PlayerOrientationConverter{
 		//TODO give each player cards and open some tramstops
 		List<Player> players = Player.getPlayers(); 
 		for(Player player : players){
-			player.getStartingCards();
+//			player.getStartingCards();
 			
 //			Random random = new Random();
 //			
@@ -253,21 +249,9 @@ public class DopeGUI extends Application implements PlayerOrientationConverter{
 			}
 		});
 		
-		Button btn_click2 = new Button("Draw stack");
-		btn_click2.setOnAction(new EventHandler<ActionEvent>(){
-			@Override
-			public void handle(ActionEvent event) {
-				System.out.println("SHUFFLE");
-				Player.getDeck(true).shuffleDrawStack();
-				Player.getNetworkController().sendMessage(new ChatMessage(ChatMessage.SHUFFLE));
-			}
-		});
-		
 
 		btn_click.setEffect(ds);
 		playField.add(btn_click);
-		btn_click2.setEffect(ds);
-		playField.add(btn_click2);
 		root = new BorderPane();
 //		playField.setTranslateX(170);
 		root.getChildren().addAll(playField);
@@ -293,6 +277,12 @@ public class DopeGUI extends Application implements PlayerOrientationConverter{
 		scene.getStylesheets().add("myStyle.css");
 		
 		stage.show();
+		
+		Player.getHashBase().recalculate();
+		Player.getPoliceBase().recalculate();
+		for(Player player : Player.getPlayers()){
+			player.getStartingCards();
+		}
 		
 	}
 	
