@@ -20,7 +20,7 @@ public abstract class PapaField {
 	}
 
 	public PapaField(String name, String text) {		
-		this(name, "", "");
+		this(name, text, "");
 	}
 	
 	public PapaField(String name, String text, String id) {
@@ -73,6 +73,11 @@ public abstract class PapaField {
 				subMap.put(key, fieldMap.get(key));
 		
 		return subMap;
+	}
+	
+	public static void resetFields() {
+		fieldMap.clear();
+		HabitabberGUI.resetHIndex();
 	}
 	
 	public static int retrieveFirstFreeHIndex(int type) {		

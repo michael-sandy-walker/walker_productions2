@@ -8,6 +8,8 @@ import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import view.HabitabberGUI;
+import view.field.CheckboxField;
+import view.field.CookieField;
 import view.field.PapaField;
 import view.field.ParseImmediateField;
 import view.field.RegExField;
@@ -26,40 +28,7 @@ public class SearchAction extends PapaAction {
 
 	@Override
 	public void performAction() {
-		String regExLine = null;
-		List<String> argList = new ArrayList<String>();
-		for (PapaField field : PapaField.getFieldMap().values()) {
-			if (field instanceof ParseImmediateField){  
-				if (((ParseImmediateField)field).getCheckbox().isSelected()) {
-					argList.add(field.getName());
-					argList.add("y");
-				} else {
-					argList.add(field.getName());
-					argList.add("n");
-				}
-			} else if (!(field instanceof RegExField)) {
-				if (field.getTextField() != null) {				
-					String value = field.getTextField().getText();
-					if (value != null && !value.isEmpty()) { 
-						argList.add(field.getName()); // The command
-						for (String v : value.split(" ")) // The value(s)
-							argList.add(v);
-					}
-				} 
-			} else if (field instanceof RegExField) {			
-				if (field.getTextField() != null) {					
-					String value = field.getTextField().getText();
-					if (value != null && !value.isEmpty()) {
-						if (regExLine == null) {
-							regExLine = "-r";
-							argList.add(regExLine); 
-						}
-						argList.add(value);
-						regExLine += value;
-					}
-				}
-			}
-		}
+		List<String> argList = gui.getArgumentList();
 		
 		gui.startProgressIndicator();
 		
