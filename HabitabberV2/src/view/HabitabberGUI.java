@@ -3,11 +3,15 @@ package view;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.function.Predicate;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -52,6 +56,8 @@ import view.button.StopButton;
 import view.field.BabyField;
 import view.field.BasicField;
 import view.field.CategoryField;
+import view.field.CheckboxField;
+import view.field.CookieField;
 import view.field.PapaField;
 import view.field.ParseImmediateField;
 import view.field.RegExField;
@@ -99,13 +105,13 @@ public class HabitabberGUI extends Application {
 
 		Scene scene = new Scene(new VBox(), 1200, 600);
 		scene.setFill(Color.OLDLACE);
-
-
+		
 		primaryStage.getIcons().add(HABITABBER_ICON);
 
+		CommandFactory.registerCommands();
 		initMenu(scene);
 		GridPane grid = initGrid(scene);
-		initForm(grid);
+		initForm(grid, null);
 
 		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 			@Override
@@ -131,13 +137,32 @@ public class HabitabberGUI extends Application {
 		((VBox)scene.getRoot()).setStyle(INLINE_CSS_STYLE);
 		return grid;
 	}
+	
+	public GridPane resetGrid(Scene scene) {
+		ObservableList<Node> nodes = ((VBox)scene.getRoot()).getChildren();
+		
+		nodes.removeIf(new Predicate<Node>() {
+		    @Override
+		    public boolean test(Node input) {
+		        if (input.getClass().getName().contains("Menu"))
+		            return false;
+		        return true;
+		    }
+		}); 
+		return initGrid(scene);
+	}
+	
+	public static void resetHIndex() {
+		hIndex = new int[]{2, 0};
+		hIndexOffset = new int[]{hIndex[REGEX_TYPE], 4};
+	}
 
 	public void initMenu(Scene scene) {				
 
 		final Menu menu1 = new Menu("File");
 		MenuBar menuBar = new MenuBar();
 
-		MenuItem menu11 = new MenuItem("Open");
+		MenuItem menu11 = new MenuItem("Open Resource File");
 		HabitabberGUI gui = this;
 		menu11.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
@@ -163,9 +188,48 @@ public class HabitabberGUI extends Application {
 			}
 		});
 		menu1.getItems().add(menu12);
+		
+		MenuItem menu13 = new MenuItem("Save As...");
+		menu13.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				FileChooser fileChooser = new FileChooser();
+				fileChooser.setTitle("Save Config File");
+				File file = fileChooser.showSaveDialog(stage);								
+				if (file != null) {
+					MainSearcher mainSearcher = MainSearcher.getSingleton(gui, null);	
+					mainSearcher.saveConfigFile(file, getArgumentList());
+				}
+			}
+		});
+		menu1.getItems().add(menu13);
+		
+		MenuItem menu14 = new MenuItem("Load Config File");
+		menu14.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				FileChooser fileChooser = new FileChooser();
+				fileChooser.setTitle("Load Config File");
+				File file = fileChooser.showOpenDialog(stage);								
+				if (file != null) {
+					MainSearcher mainSearcher = MainSearcher.getSingleton(gui, null);	
+					mainSearcher.loadConfigFile(file);
+				}
+			}
+		});
+		menu1.getItems().add(menu14);
+		
+		MenuItem menu15 = new MenuItem("Clear");
+		menu15.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				resetGrid(HabitabberGUI.stage.getScene());
+			}
+		});
+		menu1.getItems().add(menu15);
 		menuBar.getMenus().add(menu1);
 		
-		final Menu menu2 = new Menu("Edit");		
+		final Menu menu2 = new Menu("Edit");
 
 		MenuItem menu21 = new MenuItem("Reset");
 		menu21.setOnAction(new EventHandler<ActionEvent>() {
@@ -176,7 +240,6 @@ public class HabitabberGUI extends Application {
 				stage.show();
 				MainSearcher mainSearcher = MainSearcher.getSingleton(gui, null);
 				mainSearcher.resetVisitedLinks();
-
 			}
 		});
 		menu2.getItems().add(menu21);
@@ -277,13 +340,14 @@ public class HabitabberGUI extends Application {
 			mainSearcher.addCategory("Category " + key.substring(key.indexOf(PapaField.SEPARATOR) + PapaField.SEPARATOR.length()), fieldMap.get(key).getTextField().getText());
 	}
 
-	public void initForm(GridPane grid) {
+	//TODO: Add categories to loading (29-AUG-2017)
+	public void initForm(GridPane grid, List<Command> commandList) {
+		
 		PapaButton searchButton = new SearchButton(this);
 		PapaButton stopButton = new StopButton(this);
 
-		CommandFactory.registerCommands();
-
-		grid.add(new BasicField("-p", "http://www.marktplaats.nl/z.html?attributes=S%2C4548&priceTo=800%2C00&categoryId=2143&postcode=&distance=25000").getTextField(),0,1,4,1);
+		BasicField pageField = new BasicField("-p", "http://www.marktplaats.nl/z.html?attributes=S%2C4548&priceTo=800%2C00&categoryId=2143&postcode=&distance=25000");
+		grid.add(pageField.getTextField(),0,1,4,1);
 		searchButton.getButton().setPrefSize(100, 20);		
 		grid.add(searchButton.getButton(),4,1);
 		stopButton.getButton().setPrefSize(50, 20);
@@ -311,28 +375,61 @@ public class HabitabberGUI extends Application {
 
 		grid.getColumnConstraints().addAll(col1Constraints, col2Constraints, col3Constraints, col4Constraints, col5Constraints, col6Constraints);
 
+		List<String> existingRegExes = new ArrayList<>();
+		
 		//Add input fields and fill SearchAction with it
 		hIndex[REGEX_TYPE] = 2;
+		Map<String, Command> existingCommands = new HashMap<>();
+		if (commandList != null)
+			for (Command command : commandList)
+				existingCommands.put(CommandFactory.getClassNameByCommandParam(command.getName()), command);
+		
 		for (String cmd : Command.getRegisteredCommands()) {
-			if (!cmd.equals("PageCommand") && !cmd.equals("RegExCommand")) {
+			Command existingCommand = existingCommands.get(cmd);
+			if (cmd.equals("PageCommand")) {
+				if (existingCommand != null)
+					pageField.getTextField().setText(existingCommand.getValue());
+			} else if (cmd.equals("RegExCommand")) {
+				if (existingCommand != null)
+					for (String value : existingCommand.getValue().split(Command.DELIMITER)) {
+						existingRegExes.add(value);
+					}
+			} else {
 				Label label = new Label(CommandFactory.getCommandAbbreviationByClassName(cmd));
 				label.setTextFill(FILL_COLOR);
 				grid.add(label, 0, hIndex[REGEX_TYPE]);
 				if (cmd.equals("ParseImmediateCommand")) {
 					ParseImmediateField field = new ParseImmediateField("-" + CommandFactory.getCommandParamByClassName(cmd));
+					if (existingCommand != null)
+						field.getCheckbox().setSelected(existingCommand.getValue().equals("y") ? true : false);
 					grid.add(field.getCheckbox(), 1, hIndex[REGEX_TYPE], 2, 1);
 				} else if (cmd.equals("TokenCommand")){
 					PapaField field = new BasicField("-" + CommandFactory.getCommandParamByClassName(cmd), "huizen-en-kamers");
+					if (existingCommand != null)
+						field.getTextField().setText(existingCommand.getValue());
 					grid.add(field.getTextField(), 1, hIndex[REGEX_TYPE], 2, 1);
+				} else if (cmd.equals("CookieCommand")) {
+					CookieField field = new CookieField("-" + CommandFactory.getCommandParamByClassName(cmd));
+					if (existingCommand != null)
+						field.getCheckbox().setSelected(existingCommand.getValue().equals("y") ? true : false);
+					grid.add(field.getCheckbox(), 1, hIndex[REGEX_TYPE], 2, 1);
 				} else {
-					PapaField field = new BasicField("-" + CommandFactory.getCommandParamByClassName(cmd));
-					grid.add(field.getTextField(), 1, hIndex[REGEX_TYPE], 2, 1);
+					if (existingCommand != null)
+						for (String value : existingCommand.getValue().split(Command.DELIMITER)) {
+							PapaField field = new BasicField("-" + CommandFactory.getCommandParamByClassName(cmd));
+							field.getTextField().setText(value);
+							grid.add(field.getTextField(), 1, hIndex[REGEX_TYPE], 2, 1);
+						}
+					else {
+						PapaField field = new BasicField("-" + CommandFactory.getCommandParamByClassName(cmd));	
+						grid.add(field.getTextField(), 1, hIndex[REGEX_TYPE], 2, 1);
+					}
 				}
 				//				grid.add(new Label(cmd + " ( -" + CommandFactory.getCommandParamByClassName(cmd) + " )"), 0, hIndex);
-
 				hIndex[REGEX_TYPE]++;
 			}
 		}
+		
 		for (String str : new String[]{"description","media"}) {
 			CheckBox checkBox = new CheckBox();
 			checkBox.setSelected(true);
@@ -344,7 +441,7 @@ public class HabitabberGUI extends Application {
 				@Override
 				public void handle(ActionEvent event) {
 					CheckBox chk = (CheckBox) event.getSource();
-					checkBoxMap.put(str, chk.isSelected());
+					checkBoxMap.put(str, !chk.isSelected());
 				}
 			});
 			String labelName = str;
@@ -359,11 +456,17 @@ public class HabitabberGUI extends Application {
 		}
 		hIndexOffset[REGEX_TYPE] = hIndex[REGEX_TYPE]++;		
 		grid.add(new AddRegExButton(this, grid).getButton(), 0, hIndexOffset[REGEX_TYPE]);
-
-		//		String regExName = "RegEx";
-		//		addRegExField(grid, regExName, ".*(((0)[1-9]{2}[0-9][-]?(\\s?)[1-9][0-9]{5})|((\\+31|0|0031)[1-9][0-9][-]?[1-9][0-9]{6})).*", null);
-		//		addRegExField(grid, regExName, ".*(((\\+31|0|0031)6){1}[1-9]{1}[0-9]{7}).*", null);
-		//		addRegExField(grid, regExName, ".*(((0)[1-9][-]?\\s?[1-9][0-9]{2}\\s?[0-9]{5})).*", null);
+		
+		String regExName = "Regex";
+		if (existingRegExes.isEmpty()) {
+			addRegExField(grid, regExName, ".*(((0)[1-9]{2}[0-9][-]?(\\s?)[1-9][0-9]{5})|((\\+31|0|0031)[1-9][0-9][-]?[1-9][0-9]{6})).*", null);
+			addRegExField(grid, regExName, ".*(((\\+31|0|0031)6){1}[1-9]{1}[0-9]{7}).*", null);
+			addRegExField(grid, regExName, ".*(((0)[1-9][-]?\\s?[1-9][0-9]{2}\\s?[0-9]{5})).*", null);
+		} else {
+			for (String existingRegEx : existingRegExes)
+				addRegExField(grid, regExName, existingRegEx, null);
+		}
+		
 	}
 
 	public void appendOutputText(String str) {
@@ -396,7 +499,7 @@ public class HabitabberGUI extends Application {
 			}
 			GridPane innerGrid = (GridPane)scrollPane.getContent();
 			int rowCount = getRowCount(innerGrid);
-			Hyperlink hyperlink =new Hyperlink(page.getUrl());
+			Hyperlink hyperlink = new Hyperlink(page.getUrl());
 			hyperlink.setOnAction(new EventHandler<ActionEvent>() {
 
 				@Override
@@ -605,7 +708,8 @@ public class HabitabberGUI extends Application {
 	}
 
 	public void startProgressIndicator() {
-		progressIndicatorStage = new Stage();
+		if (progressIndicatorStage == null)
+			progressIndicatorStage = new Stage();
 		progressIndicatorStage.getIcons().add(HABITABBER_ICON);
 		progressIndicatorStage.setTitle("Progress indicator");
 		Task<Void> task = createTask();
@@ -620,6 +724,51 @@ public class HabitabberGUI extends Application {
 		progressIndicatorStage.show();
 
 		new Thread(task).start();
+	}
+	
+	public void loadConfig(List<Command> commandList) {
+		Scene scene = HabitabberGUI.stage.getScene();
+		grid = resetGrid(scene);
+		PapaField.resetFields();
+		initForm(grid, commandList);
+	}
+	
+	public List<String> getArgumentList() {
+		String regExLine = null;
+		List<String> argList = new ArrayList<String>();
+		for (PapaField field : PapaField.getFieldMap().values()) {
+			if (field instanceof ParseImmediateField || field instanceof CookieField){  
+				if (((CheckboxField)field).getCheckbox().isSelected()) {
+					argList.add(field.getName());
+					argList.add("y");
+				} else {
+					argList.add(field.getName());
+					argList.add("n");
+				}
+			} else if (!(field instanceof RegExField)) {
+				if (field.getTextField() != null) {				
+					String value = field.getTextField().getText();
+					if (value != null && !value.isEmpty()) { 
+						argList.add(field.getName()); // The command
+						for (String v : value.split(" ")) // The value(s)
+							argList.add(v);
+					}
+				} 
+			} else if (field instanceof RegExField) {			
+				if (field.getTextField() != null) {					
+					String value = field.getTextField().getText();
+					if (value != null && !value.isEmpty()) {
+						if (regExLine == null) {
+							regExLine = "-r";
+							argList.add(regExLine); 
+						}
+						argList.add(value);
+						regExLine += value;
+					}
+				}
+			}
+		}
+		return argList;
 	}
 
 }

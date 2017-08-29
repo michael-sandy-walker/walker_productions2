@@ -2,6 +2,8 @@ package utilities.command;
 
 public class CommandFactory {
 	
+	public static final String SEPARATOR = "-#-";
+	
 	public static void registerCommands() {
 		PageCommand.registerCommand(PageCommand.class.getSimpleName());
 		MaxSearchCommand.registerCommand(MaxSearchCommand.class.getSimpleName());		
@@ -11,6 +13,7 @@ public class CommandFactory {
 		TokenCommand.registerCommand(TokenCommand.class.getSimpleName());
 		ConcatenatedTokenCommand.registerCommand(ConcatenatedTokenCommand.class.getSimpleName());
 		RegExCommand.registerCommand(RegExCommand.class.getSimpleName());
+		CookieCommand.registerCommand(CookieCommand.class.getSimpleName());
 	}
 	
 	public static String getCommandParamByClassName(String className) {
@@ -31,6 +34,8 @@ public class CommandFactory {
 			result = "c";
 		} else if (className.equals(RegExCommand.class.getSimpleName())) {
 			result = "r";
+		} else if (className.equals(CookieCommand.class.getSimpleName())) {
+			result = "u";
 		}
 		return result;
 	}
@@ -53,7 +58,9 @@ public class CommandFactory {
 			result = "Conjunction(s)";
 		} else if (className.equals(RegExCommand.class.getSimpleName())) {
 			result = "Regex";
-		}
+		} else if (className.equals(CookieCommand.class.getSimpleName())) {
+			result = "Use cookies";
+		} 
 		return result;
 	}
 	
@@ -68,13 +75,16 @@ public class CommandFactory {
 		}  else if (commandParam.equals("m")) {
 			result = MaxSearchCommand.class.getSimpleName();
 		} else if (commandParam.equals("t")) {
-			result = "t";
+//			result = "t";
+			result = TokenCommand.class.getSimpleName();
 		} else if (commandParam.equals("v")) {
 			result = VisitedLinkCommand.class.getSimpleName();
 		} else if (commandParam.equals("c")) {
 			result = ConcatenatedTokenCommand.class.getSimpleName();
 		} else if (commandParam.equals("r")) {
 			result = RegExCommand.class.getSimpleName();
+		} else if (commandParam.equals("u")) {
+			result = CookieCommand.class.getSimpleName();
 		}
 		return result;
 	}
@@ -98,6 +108,8 @@ public class CommandFactory {
 			result = new ConcatenatedTokenCommand(name, value);
 		} else if (name.equals("r")) {
 			result = new RegExCommand(name, value);
+		} else if (name.equals("u")) {
+			result = new CookieCommand(name, value);
 		}
 		
 		return result;

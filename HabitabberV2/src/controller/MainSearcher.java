@@ -1,6 +1,13 @@
 package controller;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -63,9 +70,9 @@ public class MainSearcher {
 
 	public final static List<Pattern> patternList = new ArrayList<Pattern>();
 	static {
-		patternList.add(Pattern.compile(".*(((0)[1-9]{2}[0-9][-]?(\\s?)[1-9][0-9]{5})|((\\+31|0|0031)[1-9][0-9][-]?[1-9][0-9]{6})).*"));
-		patternList.add(Pattern.compile(".*(((\\+31|0|0031)6){1}[1-9]{1}[0-9]{7}).*", Pattern.CASE_INSENSITIVE));
-		patternList.add(Pattern.compile(".*(((0)[1-9][-]?\\s?[1-9][0-9]{2}\\s?[0-9]{5})).*"));
+//		patternList.add(Pattern.compile(".*(((0)[1-9]{2}[0-9][-]?(\\s?)[1-9][0-9]{5})|((\\+31|0|0031)[1-9][0-9][-]?[1-9][0-9]{6})).*"));
+//		patternList.add(Pattern.compile(".*(((\\+31|0|0031)6){1}[1-9]{1}[0-9]{7}).*", Pattern.CASE_INSENSITIVE));
+//		patternList.add(Pattern.compile(".*(((0)[1-9][-]?\\s?[1-9][0-9]{2}\\s?[0-9]{5})).*"));
 	}
 	//	public final static Pattern p1 = Pattern.compile(".*(((0)[1-9]{2}[0-9][-]?(\\s?)[1-9][0-9]{5})|((\\+31|0|0031)[1-9][0-9][-]?[1-9][0-9]{6})).*");
 	//	public final static Pattern p2 = Pattern.compile(".*(((\\+31|0|0031)6){1}[1-9]{1}[0-9]{7}).*", Pattern.CASE_INSENSITIVE);
@@ -77,7 +84,7 @@ public class MainSearcher {
 	public String testStr = "http://www.marktplaats.nl/a/huizen-en-kamers/huizen-te-huur/m925913694-woning-te-huur-in-ijmuiden.html?c=efb2ef4dc323389c4f92ed10afa33e3a&previousPage=lr";
 
 	//	public static List<String> visitedLinkList = new ArrayList<String>();
-	public static Set<String> visitedLinkList = new TreeSet<String>();
+	public static Set<String> visitedLinkSet = new TreeSet<String>();
 
 	public boolean doImmediateParse = true;
 
@@ -90,6 +97,8 @@ public class MainSearcher {
 	private static boolean stop;
 
 	private static String[] pageArr;
+	
+	private static boolean inMain = false;
 	
 	IOSingleton io;
 	static {
@@ -208,7 +217,7 @@ public class MainSearcher {
 		io.setReadFileName(fileName);
 		String line = null;
 		while ((line = io.readLine()) != null) {
-			visitedLinkList.add(line);
+			visitedLinkSet.add(line);
 		}
 	}
 
@@ -226,12 +235,12 @@ public class MainSearcher {
 					visitedLinkListName = "visitedLinkList.txt";
 				}
 				io.setWriterFileName(visitedLinkListName);
-				for (String link : visitedLinkList) {
+				for (String link : visitedLinkSet) {
 					io.write(link + "\n", false, false);
 				}
 				io.closeIO();	
 			}
-		}		
+		}
 	}
 
 	public List<Command>parseCommands(String... argv) {
@@ -315,8 +324,8 @@ public class MainSearcher {
 				System.out.println("");
 			}
 		}
-		//		if (isSubPage)
-		visitedLinkList.add(token.getUrl());
+		if (isSubPage)
+			visitedLinkSet.add(token.getUrl());
 
 		logger.fine("token: " + token.getUrl());
 		// 1.) retrieve page (first page = root)
@@ -337,6 +346,7 @@ public class MainSearcher {
 						performSearch(new UrlToken(subPage.getUrl()), true);
 					} catch (Exception e) {
 						logger.severe("Exception: " + e.getMessage());
+						e.printStackTrace();
 					}
 				}
 			}
@@ -415,7 +425,7 @@ public class MainSearcher {
 					e.printStackTrace();
 				}
 			}			
-			if (visitedLinkList.add(linkStr) && containsString(linkStr)) {		
+			if (visitedLinkSet.add(linkStr) && containsString(linkStr)) {		
 				SubPage result = new SubPage();	
 				result.setUrl(linkStr);
 				logger.fine("Adding link to page " + page.getUrl() + ": " + linkStr);
@@ -454,11 +464,11 @@ public class MainSearcher {
 
 	public void parseContent(Page page) {
 		// If the main page does not contain the conjunctive / disjunctive set(s)
-		if (page instanceof Page && !containsString(page.getUrl())) {
-			return;
-		}
+//		if (page instanceof Page && !containsString(page.getUrl())) {
+//			return;
+//		}
 		// If we don't parse immediately, retrieve the content of the link
-		else if (!doImmediateParse && (page instanceof SubPage)) {			
+		if (!doImmediateParse && (page instanceof SubPage)) {			
 			page = retrievePage(page.getUrl(), true);
 		}		
 		// Parse the content and stuff it into the Page.
@@ -505,7 +515,7 @@ public class MainSearcher {
 				}
 			}
 			
-			if (page.getDescription() == null && !page.getDescription().hasText()) {
+			if (page.getDescription() == null || !page.getDescription().hasText()) {
 				Elements desc = doc.select("title");
 				for (Element element : desc) {
 					page.setDescription(element);
@@ -541,25 +551,6 @@ public class MainSearcher {
 				}
 		}
 	}
-
-	/**
-	 * Main class.
-	 * Commands: -p PAGE 		- The searchable root pages
-	 * 			 -l LEVEL 		- The log level
-	 * 			 -i 			- Immediate parsing of the content
-	 * 			 -m NUMBER  	- The number of the searchable pages 
-	 * 			 -v LINKFILE	- The file of the previously visited links
-	 * 			 -t	TOKEN(S)	- The disjunctive token(s) links are searched for
-	 * 			 -c CONJUNCTION - The conjunctive tokens links are searched for 
-	 * @param argv 
-	 */
-	public static void main(String[] argv) {
-		inMain = true;
-		MainSearcher mainSearcher = new MainSearcher(argv);
-		mainSearcher.activate(argv);		
-	}
-
-	private static boolean inMain = false;
 
 	/**
 	 * @return the stop
@@ -609,12 +600,88 @@ public class MainSearcher {
 	}
 	
 	public void resetVisitedLinks() {
-		visitedLinkList = new TreeSet<String>();
+		visitedLinkSet = new TreeSet<String>();
 	}
 	
 	public void addCategory(String name, String value) {
 		categoryMap.put(name, value);		
 		System.out.println("Saving category " + name + ", value: " + value);
+	}
+	
+	/**
+	 * Main class.
+	 * Commands: -p PAGE 		- The searchable root pages
+	 * 			 -l LEVEL 		- The log level
+	 * 			 -i 			- Immediate parsing of the content
+	 * 			 -m NUMBER  	- The number of the searchable pages 
+	 * 			 -v LINKFILE	- The file of the previously visited links
+	 * 			 -t	TOKEN(S)	- The disjunctive token(s) links are searched for
+	 * 			 -c CONJUNCTION - The conjunctive tokens links are searched for 
+	 * @param argv 
+	 */
+	public static void main(String[] argv) {
+		inMain = true;
+		MainSearcher mainSearcher = new MainSearcher(argv);
+		mainSearcher.activate(argv);		
+	}
+	
+	//TODO: Add categories to saving (29-AUG-2017)
+	public void saveConfigFile(File file, List<String> inputParams) {
+		try (
+				Writer writer = new FileWriter(file);
+				BufferedWriter bw = new BufferedWriter(writer);
+				) {
+			assignInputParams(inputParams.toArray(new String[inputParams.size()]));
+			outputText("Saved.");
+			for (Command command : commandList) {
+				bw.write(command.getName() + CommandFactory.SEPARATOR + command.getValue() + "\n");
+			}
+		} catch (IOException e) {
+			logger.warning("IOException occured during saving config file.");
+		} finally {
+		}
+	}
+	
+	public void loadConfigFile(File file) {
+		try (
+				Reader reader = new FileReader(file);
+				BufferedReader bw = new BufferedReader(reader);
+				) {
+			String line = null;
+			if (commandList == null)
+				commandList = new ArrayList<>();
+			commandList.clear();
+			while ((line = bw.readLine()) != null) {
+				String[] cmdPair = line.split(CommandFactory.SEPARATOR);
+				commandList.add(CommandFactory.getCommand(cmdPair[0], cmdPair[1]));
+			}
+			if (!inMain) {
+				Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						// url
+						
+						// left config:	
+						// 	page limit
+						//	log level
+						//	link file
+						//	immediate search
+						//	disjunctions
+						//	conjunctions
+						//	use cookies
+						//	descriptions
+						//	media
+						//	regex
+						// categories
+						// content
+						gui.loadConfig(commandList);                               
+					}
+				});		
+			}
+		} catch (IOException e) {
+			logger.warning("IOException occured during saving config file.");
+		} finally {
+		}
 	}
 	
 }

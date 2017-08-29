@@ -34,16 +34,24 @@ public class PopupAction extends PapaAction {
 		
         HTMLEditor editor = new HTMLEditor();
         String html = "<html><body>";
-        for (Object o : page.getContent().get("media")) {
-        	if (!o.toString().isEmpty()) {
-        		html += "<img src=\"" + o.toString() + "\">";
+        if (page.getContent() != null) {
+        	for (Object o : page.getContent().get("media")) {
+        		if (!o.toString().isEmpty()) {
+        			html += "<img src=\"" + o.toString() + "\">";
+        		}
         	}
+        } else {
+        	html += "<p>No media available.</p>";
         }
         
-        for (String srcKey : page.getSource().keySet()) {
-        	html += srcKey + ":";
-        	for (String srcVal : page.getSource().get(srcKey))
-        		html += "<img src=\"" + srcVal + "\">";
+        if (page.getSource() != null) {
+        	for (String srcKey : page.getSource().keySet()) {
+        		html += srcKey + ":";
+        		for (String srcVal : page.getSource().get(srcKey))
+        			html += "<img src=\"" + srcVal + "\">";
+        	}
+        } else {
+        	html += "<p>No source available.</p>";
         }
         
         if (page.getDescription() != null) {
