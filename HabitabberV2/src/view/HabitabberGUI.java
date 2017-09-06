@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -21,6 +22,7 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.Control;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
@@ -44,8 +46,10 @@ import javafx.stage.Popup;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import result.Page;
+import utilities.command.CategoryCommand;
 import utilities.command.Command;
 import utilities.command.CommandFactory;
+import utilities.command.GuiCheckboxCommand;
 import view.action.RemoveAction;
 import view.button.AddRegExButton;
 import view.button.PapaButton;
@@ -346,7 +350,7 @@ public class HabitabberGUI extends Application {
 		PapaButton searchButton = new SearchButton(this);
 		PapaButton stopButton = new StopButton(this);
 
-		BasicField pageField = new BasicField("-p", "http://www.marktplaats.nl/z.html?attributes=S%2C4548&priceTo=800%2C00&categoryId=2143&postcode=&distance=25000");
+		BasicField pageField = new BasicField("-p", "https://www.marktplaats.nl/z.html?attributes=S%2C4548&priceTo=800%2C00&categoryId=2143&postcode=&distance=25000");
 		grid.add(pageField.getTextField(),0,1,4,1);
 		searchButton.getButton().setPrefSize(100, 20);		
 		grid.add(searchButton.getButton(),4,1);
@@ -376,6 +380,7 @@ public class HabitabberGUI extends Application {
 		grid.getColumnConstraints().addAll(col1Constraints, col2Constraints, col3Constraints, col4Constraints, col5Constraints, col6Constraints);
 
 		List<String> existingRegExes = new ArrayList<>();
+		Map<String, String> existingCategories = new LinkedHashMap<>();
 		
 		//Add input fields and fill SearchAction with it
 		hIndex[REGEX_TYPE] = 2;
@@ -394,6 +399,13 @@ public class HabitabberGUI extends Application {
 					for (String value : existingCommand.getValue().split(Command.DELIMITER)) {
 						existingRegExes.add(value);
 					}
+			} else if (cmd.equals("CategoryCommand")) {
+				if (existingCommand != null) {
+					for (String value : existingCommand.getValue().split(CategoryCommand.VALUE_DELIMITER)) {
+						String[] keyValuePair = value.split(CategoryCommand.KEY_DELIMITER);
+						existingCategories.put(keyValuePair[0], keyValuePair[1]);
+					}
+				}
 			} else {
 				Label label = new Label(CommandFactory.getCommandAbbreviationByClassName(cmd));
 				label.setTextFill(FILL_COLOR);
@@ -404,7 +416,7 @@ public class HabitabberGUI extends Application {
 						field.getCheckbox().setSelected(existingCommand.getValue().equals("y") ? true : false);
 					grid.add(field.getCheckbox(), 1, hIndex[REGEX_TYPE], 2, 1);
 				} else if (cmd.equals("TokenCommand")){
-					PapaField field = new BasicField("-" + CommandFactory.getCommandParamByClassName(cmd), "huizen-en-kamers");
+					PapaField field = new BasicField("-" + CommandFactory.getCommandParamByClassName(cmd), !existingCommands.isEmpty() ? "" : "huizen-en-kamers");
 					if (existingCommand != null)
 						field.getTextField().setText(existingCommand.getValue());
 					grid.add(field.getTextField(), 1, hIndex[REGEX_TYPE], 2, 1);
@@ -431,17 +443,25 @@ public class HabitabberGUI extends Application {
 		}
 		
 		for (String str : new String[]{"description","media"}) {
+			Boolean existingField = null;
+			if (GuiCheckboxCommand.CHECKBOX_MAP != null)
+				existingField = GuiCheckboxCommand.CHECKBOX_MAP.get(str);
 			CheckBox checkBox = new CheckBox();
-			checkBox.setSelected(true);
-			if (str.equals("media"))
-				checkBox.setSelected(false);
+			if (existingField != null)
+				checkBox.setSelected(existingField);
+			else {
+				checkBox.setSelected(true);
+				if (str.equals("media")) {
+					checkBox.setSelected(false);
+				}
+			}
 			checkBoxMap.put(str, checkBox.isSelected());
 
 			checkBox.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(ActionEvent event) {
 					CheckBox chk = (CheckBox) event.getSource();
-					checkBoxMap.put(str, !chk.isSelected());
+					checkBoxMap.put(str, chk.isSelected());
 				}
 			});
 			String labelName = str;
@@ -465,6 +485,13 @@ public class HabitabberGUI extends Application {
 		} else {
 			for (String existingRegEx : existingRegExes)
 				addRegExField(grid, regExName, existingRegEx, null);
+		}
+		
+		if (!existingCategories.isEmpty()) {
+			Scene myDialogScene = new Scene(new VBox(), 400, 200);
+			GridPane categoryGridDummy = initGrid(myDialogScene);
+			for (String existingCategoryKey : existingCategories.keySet())
+				addCategoryField(categoryGridDummy, "Category", existingCategories.get(existingCategoryKey), null);
 		}
 		
 	}
@@ -601,14 +628,19 @@ public class HabitabberGUI extends Application {
 		String name = "" + firstFreeHIndex;
 
 		BabyField babyField = null;
-		if (type == CATEGORY_TYPE)
+		Control label = null; 
+		if (type == CATEGORY_TYPE) {
 			babyField = new CategoryField(name, regExValue);
-		else
+			label = new TextField(regExName + " " + (firstFreeHIndex - getHIndexOffset(type)));			
+			grid.add(label, 0, firstFreeHIndex);
+			grid.add(babyField.getTextField(), 1, firstFreeHIndex);
+		} else {
 			babyField = new RegExField(name, regExValue);
-		Label label = new Label(regExName + " " + (firstFreeHIndex - getHIndexOffset(type)));		
-		label.setTextFill(FILL_COLOR);
-		grid.add(label, 0, firstFreeHIndex);
-		grid.add(babyField.getTextField(), 1, firstFreeHIndex);
+			label = new Label(regExName + " " + (firstFreeHIndex - getHIndexOffset(type)));		
+			((Label)label).setTextFill(FILL_COLOR);
+			grid.add(label, 0, firstFreeHIndex);
+			grid.add(babyField.getTextField(), 1, firstFreeHIndex);
+		}
 
 		Image removeIcon = new Image(HabitabberGUI.class.getResourceAsStream("/view/delete.png"));
 		RemoveButton removeButton = new RemoveButton(name, new RemoveAction(this, babyField.getId()));
@@ -630,8 +662,9 @@ public class HabitabberGUI extends Application {
 			if (papaField instanceof BabyField) {
 				BabyField babyField =  (BabyField)fieldMap.get(key);
 				int hIndex = babyField.getHIndex();
-				Label label = babyField.getLabel();
-				label.setTextFill(FILL_COLOR);
+				Control label = babyField.getLabel();
+				if (label instanceof Label)
+					((Label)label).setTextFill(FILL_COLOR);
 				grid.add(label, 0, hIndex);
 				grid.add(babyField.getTextField(), 1, hIndex);
 
@@ -734,7 +767,8 @@ public class HabitabberGUI extends Application {
 	}
 	
 	public List<String> getArgumentList() {
-		String regExLine = null;
+		List<String> regExes = new ArrayList<>();
+		List<String> categories = new ArrayList<>();
 		List<String> argList = new ArrayList<String>();
 		for (PapaField field : PapaField.getFieldMap().values()) {
 			if (field instanceof ParseImmediateField || field instanceof CookieField){  
@@ -745,7 +779,7 @@ public class HabitabberGUI extends Application {
 					argList.add(field.getName());
 					argList.add("n");
 				}
-			} else if (!(field instanceof RegExField)) {
+			} else if (!(field instanceof RegExField) && !(field instanceof CategoryField)) {
 				if (field.getTextField() != null) {				
 					String value = field.getTextField().getText();
 					if (value != null && !value.isEmpty()) { 
@@ -757,17 +791,39 @@ public class HabitabberGUI extends Application {
 			} else if (field instanceof RegExField) {			
 				if (field.getTextField() != null) {					
 					String value = field.getTextField().getText();
-					if (value != null && !value.isEmpty()) {
-						if (regExLine == null) {
-							regExLine = "-r";
-							argList.add(regExLine); 
-						}
-						argList.add(value);
-						regExLine += value;
-					}
+					if (value != null && !value.isEmpty())
+						regExes.add(value);
+				}
+			} else if (field instanceof CategoryField) {
+				if (field.getTextField() != null) {
+					String value = field.getTextField().getText();
+					if (value != null && !value.isEmpty())
+						categories.add(((TextField)((CategoryField) field).getLabel()).getText() + CategoryCommand.KEY_DELIMITER + value);
 				}
 			}
 		}
+		if (!regExes.isEmpty()) {
+			argList.add("-r");
+			for (String regEx : regExes)
+				argList.add(regEx);
+		}
+		if (!categories.isEmpty()) {
+			argList.add("-k");
+			String categoryLine = "";
+			for (String category : categories) {
+				if (!categoryLine.isEmpty())
+					categoryLine += CategoryCommand.VALUE_DELIMITER;
+				categoryLine += category;
+			}
+			argList.add(categoryLine);
+		}
+		
+		if (!checkBoxMap.isEmpty()) {
+			argList.add("-gcb");
+			for (String key : checkBoxMap.keySet())
+				argList.add(key + GuiCheckboxCommand.VALUE_SEPARATOR + (checkBoxMap.get(key) ? "y" : "n"));
+		}
+		
 		return argList;
 	}
 

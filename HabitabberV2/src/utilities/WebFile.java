@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.util.Map;
 
 import utilities.command.CookieCommand;
+import cookies.AlternativeCryptUtils;
 import cookies.JNACrypt32Utils;
 import cookies.SQLiteCookie;
 import cookies.SQLiteCookieReader;
@@ -23,6 +24,8 @@ public final class WebFile {
 	private String MIMEtype  = null;
 	private String charset   = null;
 	private Object content   = null;
+	
+	private static Map<String, Map<String, SQLiteCookie>> cookieMap;
 
 	/** Open a web file. */
 	public WebFile( String urlString ) throws java.net.MalformedURLException, java.io.IOException {
@@ -32,7 +35,8 @@ public final class WebFile {
 
 		if (CookieCommand.isUseCookies()) {
 			String cookieMapKey = "";
-			Map<String, Map<String, SQLiteCookie>> cookieMap = SQLiteCookieReader.getSQLiteCookies();
+			if (cookieMap == null)
+				cookieMap = SQLiteCookieReader.getSQLiteCookies(); // yes, we have to reinitialize the program after setting a cookie by browser. everything else would be a waste of performance (04-SEP-2017)
 			for (String cookieMapKeyTmp : cookieMap.keySet()) {
 				if (urlString.contains(cookieMapKeyTmp) || urlString.contains(cookieMapKeyTmp.substring(1))) {
 					cookieMapKey = cookieMapKeyTmp;
@@ -67,7 +71,7 @@ public final class WebFile {
 							if (!cookie.isEmpty())
 								cookie += "; ";					
 							try {
-								cookie += cookieName + "=" + new String(JNACrypt32Utils.unprotect(sQLiteCookie.getEncrypted_value()));
+								cookie += cookieName + "=" + new String(AlternativeCryptUtils.unprotect(sQLiteCookie.getEncrypted_value()));
 							} catch (Exception e) {
 								e.printStackTrace();
 							}					

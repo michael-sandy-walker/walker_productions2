@@ -1,6 +1,7 @@
 package view.action;
 
 import result.Page;
+import result.SourceElement;
 import view.HabitabberGUI;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -35,20 +36,31 @@ public class PopupAction extends PapaAction {
         HTMLEditor editor = new HTMLEditor();
         String html = "<html><body>";
         if (page.getContent() != null) {
-        	for (Object o : page.getContent().get("media")) {
-        		if (!o.toString().isEmpty()) {
-        			html += "<img src=\"" + o.toString() + "\">";
-        		}
-        	}
+	        	for (Object o : page.getContent().get("media")) {
+	        		String str = o.toString();
+	        		if (!str.isEmpty())
+	        			html += "<img src=\"" + getRealUrl(str) + "\">";
+	        	}
         } else {
-        	html += "<p>No media available.</p>";
+        		html += "<p>No media available.</p>";
         }
         
         if (page.getSource() != null) {
         	for (String srcKey : page.getSource().keySet()) {
         		html += srcKey + ":";
-        		for (String srcVal : page.getSource().get(srcKey))
-        			html += "<img src=\"" + srcVal + "\">";
+        		for (SourceElement srcVal : page.getSource().get(srcKey)) {
+        			String title = srcVal.getTitle();
+        			if (title != null && !title.isEmpty()) {
+        				html += "<b>" + title + "</b>";
+        				html += "<br>";
+        			}
+        			html += "<img src=\"" + getRealUrl(srcVal.getUrl()) 
+        			+ ((srcVal.getAlt() != null && !srcVal.getAlt().isEmpty()) ? "\" alt=\"" 
+        			+ srcVal.getAlt() : "") + ((srcVal.getTitle() != null && !srcVal.getTitle().isEmpty()) ? "\" title=\"" + srcVal.getTitle() : "") 
+        			+ "\">";
+        			html += "<br><br>";
+        			
+        		}
         	}
         } else {
         	html += "<p>No source available.</p>";
@@ -71,5 +83,14 @@ public class PopupAction extends PapaAction {
         dialogStage.setScene(myDialogScene);
 		
         dialogStage.show();	
+	}
+	
+	private String getRealUrl(String str) {
+		if (str.startsWith("//")) {
+			String url = page.getUrl();
+			if (url != null && !url.isEmpty())
+				str = url.substring(0, url.indexOf("//") + 2) + str.substring(2);
+		}
+		return str;
 	}
 }
