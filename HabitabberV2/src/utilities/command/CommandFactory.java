@@ -14,6 +14,7 @@ public class CommandFactory {
 		ConcatenatedTokenCommand.registerCommand(ConcatenatedTokenCommand.class.getSimpleName());
 		RegExCommand.registerCommand(RegExCommand.class.getSimpleName());
 		CookieCommand.registerCommand(CookieCommand.class.getSimpleName());
+		CategoryCommand.registerCommand(CategoryCommand.class.getSimpleName());
 	}
 	
 	public static String getCommandParamByClassName(String className) {
@@ -36,6 +37,10 @@ public class CommandFactory {
 			result = "r";
 		} else if (className.equals(CookieCommand.class.getSimpleName())) {
 			result = "u";
+		} else if (className.equals(CategoryCommand.class.getSimpleName())) {
+			result = "k";
+		} else if (className.equals(GuiCheckboxCommand.class.getSimpleName())) {
+			result = "gcb";
 		}
 		return result;
 	}
@@ -60,7 +65,11 @@ public class CommandFactory {
 			result = "Regex";
 		} else if (className.equals(CookieCommand.class.getSimpleName())) {
 			result = "Use cookies";
-		} 
+		} else if (className.equals(CategoryCommand.class.getSimpleName())) {
+			result = "Categories";
+		} else if (className.equals(GuiCheckboxCommand.class.getSimpleName())) {
+			result = "Checkbox Dummy Text";
+		}
 		return result;
 	}
 	
@@ -85,6 +94,10 @@ public class CommandFactory {
 			result = RegExCommand.class.getSimpleName();
 		} else if (commandParam.equals("u")) {
 			result = CookieCommand.class.getSimpleName();
+		} else if (commandParam.equals("k")) {
+			result = CategoryCommand.class.getSimpleName();
+		} else if (commandParam.equals("gcb")) {
+			result = GuiCheckboxCommand.class.getSimpleName();
 		}
 		return result;
 	}
@@ -110,6 +123,10 @@ public class CommandFactory {
 			result = new RegExCommand(name, value);
 		} else if (name.equals("u")) {
 			result = new CookieCommand(name, value);
+		} else if (name.equals("k")) {
+			result = new CategoryCommand(name, value);
+		} else if (name.equals("gcb")) {
+			result = new GuiCheckboxCommand(name, value);
 		}
 		
 		return result;

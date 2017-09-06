@@ -11,13 +11,12 @@ import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyStore.Entry.Attribute;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -30,8 +29,6 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javafx.application.Platform;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -39,16 +36,20 @@ import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
+import javafx.application.Platform;
 import result.Page;
 import result.PageFactory;
+import result.SourceElement;
 import result.SubPage;
 import utilities.IOSingleton;
 import utilities.Token;
 import utilities.UrlToken;
 import utilities.WebFile;
+import utilities.command.CategoryCommand;
 import utilities.command.Command;
 import utilities.command.CommandFactory;
 import utilities.command.ConcatenatedTokenCommand;
+import utilities.command.GuiCheckboxCommand;
 import utilities.command.LogCommand;
 import utilities.command.MaxSearchCommand;
 import utilities.command.PageCommand;
@@ -64,7 +65,7 @@ public class MainSearcher {
 	
 	WebFile webFile;
 	
-	private Map<String, String> categoryMap = new HashMap<String, String>();
+//	private Map<String, String> categoryMap = new HashMap<String, String>();
 
 	private List<Token> tokenList = new ArrayList<Token>();
 
@@ -204,6 +205,11 @@ public class MainSearcher {
 							patternList.add(Pattern.compile(cmdSplitlet));
 						}
 
+					} else if (cmd instanceof GuiCheckboxCommand && cmd.getValue() != null && !cmd.getValue().isEmpty()) {
+						for (String keyValue : cmd.getValue().split(Command.DELIMITER)) {
+							String[] keyValuePair = keyValue.split(":");
+							GuiCheckboxCommand.CHECKBOX_MAP.put(keyValuePair[0], keyValuePair[1].equals("y") ? true : false);
+						}
 					}
 				}
 			}			
@@ -415,7 +421,7 @@ public class MainSearcher {
 		Elements links = doc.select("a[href]");				
 		for (Element link : links) {						
 			String linkStr = link.attr("href");
-			if (linkStr.startsWith("/")) { // We have a sub page link here, let's add its parent url
+			if (linkStr.startsWith("/") || linkStr.startsWith("?")) { // We have a sub page link here, let's add its parent url
 				try {
 					URL url = new URL(page.getUrl());
 					String host = url.getHost();
@@ -501,6 +507,8 @@ public class MainSearcher {
 				}
 			}
 			
+			Map<String, String> categoryMap = CategoryCommand.CATEGORY_MAP;
+			
 			for (String categoryName : categoryMap.keySet()) {
 				String categoryValue = categoryMap.get(categoryName);
 				Elements elements = doc.select(categoryValue);
@@ -508,9 +516,19 @@ public class MainSearcher {
 					if (element.text() != null && !element.text().isEmpty()) {
 						page.setContent(categoryName, element.text());
 					} else if (element.attributes() != null && (element.attributes().size() > 0)) {
-						for (org.jsoup.nodes.Attribute attribute : element.attributes().asList()) 
+						SourceElement source = new SourceElement();
+						for (org.jsoup.nodes.Attribute attribute : element.attributes().asList()) { 
 							if (attribute.getKey().equals("src"))
-								page.setSource(categoryName, attribute.getValue());
+								source.setUrl(attribute.getValue());
+//								page.setSource(categoryName, new SourceElement(attribute.getValue());
+							else if (attribute.getKey().equals("title"))
+								source.setTitle(attribute.getValue());
+							else if (attribute.getKey().equals("alt"))
+								source.setAlt(attribute.getValue());
+							else
+								source.getOtherAttributes().put(attribute.getKey(), attribute.getValue());
+						}
+						page.setSource(categoryName, source);
 					}
 				}
 			}
@@ -604,7 +622,7 @@ public class MainSearcher {
 	}
 	
 	public void addCategory(String name, String value) {
-		categoryMap.put(name, value);		
+		CategoryCommand.CATEGORY_MAP.put(name, value);		
 		System.out.println("Saving category " + name + ", value: " + value);
 	}
 	
@@ -674,7 +692,7 @@ public class MainSearcher {
 						//	regex
 						// categories
 						// content
-						gui.loadConfig(commandList);                               
+						gui.loadConfig(commandList);                             
 					}
 				});		
 			}
@@ -683,5 +701,28 @@ public class MainSearcher {
 		} finally {
 		}
 	}
+	
+	// TODO (03-SEP-2017):
+	// A: Content parsing
+	// 1.) Give regexes also label textfields
+	// 2.) make regexes subclass of "operational values" type (next to int/string/percentage/etc. types)
+	// 3.) Implement "operations" type (incl. mathematical operations like +,-,/,%,... and conditions like >,<,==,... and regexes)
+	// 4.) Implement "association" mechanism (operational value -> operation -> operational value); (e.g., )
+	// B: Content display
+	// 1.) Implement (optionally) separated columns for categories
+	// 2.) Implement headers per column with category names
+	// 3.) Make columns resizable
+	// C: Saving/Loading
+	// 1.) Implement saving mechanism for A
+	// 2.) Implement loading mechanism for A
+	// 3.) Implement saving mechanism for B
+	// 4.) Implement loading mechanism for B
+	// D: ZZ
+	// 1.) Implement ZZ structure
+	// 2.) Port page hierarchy to ZZ structure (incl. dimensions per maybe category or searchobj or both)
+	// 3.) Implement ZZ viewer (3d, amount of dimensions configurable, specific displayed dimensions configurable, content of preview configurable)
+	// E: Freemarker Templates
+	// 1.) Implement freemarker into popup action
+	// 2.) Integrate categories
 	
 }

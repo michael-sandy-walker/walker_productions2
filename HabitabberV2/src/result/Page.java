@@ -22,7 +22,7 @@ public class Page {
 	
 	private Element description;
 	
-	private Map<String, List<String>> source;
+	private Map<String, List<SourceElement>> source;
 
 	public Page() {
 		unparsedContent = "";
@@ -93,21 +93,21 @@ public class Page {
 	/**
 	 * @return the source
 	 */
-	public Map<String, List<String>> getSource() {
+	public Map<String, List<SourceElement>> getSource() {
 		return source;
 	}
 
 	/**
 	 * @param source the source to set
 	 */
-	public void setSource(Map<String, List<String>> source) {
+	public void setSource(Map<String, List<SourceElement>> source) {
 		this.source = source;
 	}
 	
-	public void setSource(String key, String value) {
+	public void setSource(String key, SourceElement value) {
 		if (source == null)
-			source = new TreeMap<String, List<String>>();
-		List<String> list = new ArrayList<String>();
+			source = new TreeMap<>();
+		List<SourceElement> list = new ArrayList<>();
 		if (source.get(key) != null) 				
 			list = source.get(key);			
 		list.add(value);
