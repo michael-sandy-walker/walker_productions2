@@ -29,6 +29,13 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.JOptionPane;
+
+import javafx.application.Platform;
+import marytts.client.MaryBlankClient;
+import marytts.client.MaryClient;
+import marytts.client.http.MaryHttpClient;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -134,6 +141,15 @@ public class MainSearcher {
 
 	private MainSearcher(HabitabberGUI gui, String[] argv) {
 		this.gui = gui;
+		
+		try {
+			processor = MaryClient.getMaryClient();
+			streamMp3 = Boolean.getBoolean("stream.mp3");
+		} catch (Exception e) {
+			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, e.getMessage(), "Cannot connect to server", JOptionPane.ERROR_MESSAGE);
+			System.exit(1);
+		}
 	}
 
 	public static MainSearcher getSingleton(HabitabberGUI gui, String[] argv) {
@@ -156,7 +172,8 @@ public class MainSearcher {
 
 				logger.info("Maximum number of searchable pages: " + MAX_SITES);
 				//				io.write(dateFormat.format(date) + " - HabitabberV2 initialized.\n", true);
-				outputText(dateFormat.format(date) + " - HabitabberV2 initialized.\n");
+//				outputText(dateFormat.format(date) + " - HabitabberV2 initialized.\n");
+				outputText("HabitabberV2 initialized.\n");
 
 				/**
 				 * End setup
@@ -235,7 +252,8 @@ public class MainSearcher {
 			if (io != null) {
 				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 				Date date = new Date();
-				outputText(dateFormat.format(date) + " - HabitabberV2 terminated.\n");
+//				outputText(dateFormat.format(date) + " - HabitabberV2 terminated.\n");
+				outputText("HabitabberV2 terminated.\n");
 				String visitedLinkListName = io.getReadFileName();
 				if (visitedLinkListName == null || visitedLinkListName.isEmpty()) {
 					visitedLinkListName = "visitedLinkList.txt";
@@ -595,6 +613,15 @@ public class MainSearcher {
 			});		
 		}
 		System.out.println(str);
+		try {
+			speak(str);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public void setPage(Page page) {	
@@ -624,6 +651,55 @@ public class MainSearcher {
 	public void addCategory(String name, String value) {
 		CategoryCommand.CATEGORY_MAP.put(name, value);		
 		System.out.println("Saving category " + name + ", value: " + value);
+	}
+	
+	
+	
+	/* -------------------- Data and Processing stuff -------------------- */
+	private MaryClient processor;
+
+	private marytts.util.data.audio.AudioPlayer audioPlayer = null;
+	private boolean streamMp3 = false;
+	
+	public void speak(String text) throws IOException, InterruptedException {
+		String textDataType = "TEXT"; 
+		String defaultVoiceLocale = "en_GB";
+		String defailtVoiceName ="cmu-slt-hsmm";
+		String audioEffectsString = 
+//				"Volume(amount:2.0;)"
+//				+ "+TractScaler(amount:1.5;)"
+//				+ "+F0Scale(f0Scale:2.0;)"
+//				+ "+F0Add(f0Add:50.0;)"
+//				+ "+Rate(durScale:1.5;)"
+//				+ "+Robot(amount:100.0;)"
+//				+ "+Whisper(amount:100.0;)"
+//				+ "+Stadium(amount:100.0)"
+				"Chorus(delay1:566;amp1:1.0;delay2:400;amp2:1.0;delay3:2500;amp3:1.0)"
+//				+ "+FIRFilter(type:3;fc1:500.0;fc2:2000.0)"
+//				+ "+JetPilot()"
+;
+		
+		System.out.println("Processing text: " + text);
+		if (audioPlayer == null)
+			audioPlayer = new marytts.util.data.audio.AudioPlayer();
+		try {
+		processor.streamAudio(text, textDataType,
+				defaultVoiceLocale, streamMp3 ? "MP3" : "AU",
+				defailtVoiceName, "", audioEffectsString, audioPlayer,
+				new MaryHttpClient.AudioPlayerListener() {
+					public void playerFinished() {
+						if (audioPlayer != null) {
+							audioPlayer.cancel();
+							audioPlayer = null;
+						}
+					}
+
+					public void playerException(Exception e) {
+					}
+				});
+		} catch (IllegalStateException e) {
+			// another audio already playing, do nothing
+		}
 	}
 	
 	/**
