@@ -1,5 +1,10 @@
 package utilities.command;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.ListIterator;
+
 public class CommandFactory {
 	
 	public static final String SEPARATOR = "-#-";
@@ -41,6 +46,10 @@ public class CommandFactory {
 			result = "k";
 		} else if (className.equals(GuiCheckboxCommand.class.getSimpleName())) {
 			result = "gcb";
+		} else if (className.equals(NumbExConditionalCommand.class.getSimpleName())) {
+			result = "nc";
+		} else if (className.equals(NumbExMathematicalCommand.class.getSimpleName())) {
+			result = "nm";
 		}
 		return result;
 	}
@@ -69,6 +78,10 @@ public class CommandFactory {
 			result = "Categories";
 		} else if (className.equals(GuiCheckboxCommand.class.getSimpleName())) {
 			result = "Checkbox Dummy Text";
+		} else if (className.equals(NumbExConditionalCommand.class.getSimpleName())) {
+			result = "NumbexC";
+		} else if (className.equals(NumbExMathematicalCommand.class.getSimpleName())) {
+			result = "NumbexM";
 		}
 		return result;
 	}
@@ -98,6 +111,10 @@ public class CommandFactory {
 			result = CategoryCommand.class.getSimpleName();
 		} else if (commandParam.equals("gcb")) {
 			result = GuiCheckboxCommand.class.getSimpleName();
+		} else if (commandParam.equals("nc")) {
+			result = NumbExConditionalCommand.class.getSimpleName();
+		} else if (commandParam.equals("nm")) {
+			result = NumbExMathematicalCommand.class.getSimpleName();
 		}
 		return result;
 	}
@@ -120,15 +137,68 @@ public class CommandFactory {
 		} else if (name.equals("c")) {
 			result = new ConcatenatedTokenCommand(name, value);
 		} else if (name.equals("r")) {
-			result = new RegExCommand(name, value);
+			result = new RegExCommand(name, value, parseSubExpressionCommands(name, value));
 		} else if (name.equals("u")) {
 			result = new CookieCommand(name, value);
 		} else if (name.equals("k")) {
 			result = new CategoryCommand(name, value);
 		} else if (name.equals("gcb")) {
 			result = new GuiCheckboxCommand(name, value);
+		} else if (name.equals("nc")) {			
+			result = new NumbExConditionalCommand(name, value, parseSubExpressionCommands(name, value));
+		} else if (name.equals("nm")) {
+			result = new NumbExMathematicalCommand(name, value, parseSubExpressionCommands(name, value));
 		}
 		
+		return result;
+	}
+	
+	private static List<ExpressionCommand>parseSubExpressionCommands(String parentName, String input) {
+		if (input == null)
+			return null;
+		List<ExpressionCommand> result = new ArrayList<>();
+
+		ListIterator<String> argvIter = (ListIterator<String>) Arrays.asList(input.split(" ")).listIterator();
+
+		while (argvIter.hasNext()) {			
+			String cmd = (String) argvIter.next();						
+//			logger.finest("cmd: " + cmd);
+			String value = null;
+			if (cmd.startsWith("--")) {
+				cmd = cmd.substring(2);
+				value = valueLookAhead(argvIter);
+			} else {
+				return null;
+			}
+			Command command = CommandFactory.getCommand(parentName + "_" + cmd, value);
+			if (command instanceof ExpressionCommand)
+				result.add((ExpressionCommand)CommandFactory.getCommand(parentName + "_" + cmd, value));
+		}
+
+		return result;
+	}
+
+	/**
+	 * Looks for values corresponding to a command
+	 * @param cmdIter The command iterator
+	 * @return String (value's corresponding to a command separated by a Command DELIMITER)
+	 */
+	private static String valueLookAhead(ListIterator<String> cmdIter) {
+		String result = "";
+
+		while (cmdIter.hasNext() ) {			
+			String cmd = (String) cmdIter.next();
+			if (!cmd.startsWith("--") && !cmd.startsWith("-")) {
+				if (!result.isEmpty()) {
+					result += Command.DELIMITER;
+				}
+				result += cmd;
+			} else {
+				cmdIter.previous();
+				break;
+			}			
+		}		
+
 		return result;
 	}
 }

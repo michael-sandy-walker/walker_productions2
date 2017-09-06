@@ -142,14 +142,14 @@ public class MainSearcher {
 	private MainSearcher(HabitabberGUI gui, String[] argv) {
 		this.gui = gui;
 		
-		try {
-			processor = MaryClient.getMaryClient();
-			streamMp3 = Boolean.getBoolean("stream.mp3");
-		} catch (Exception e) {
-			e.printStackTrace();
-			JOptionPane.showMessageDialog(null, e.getMessage(), "Cannot connect to server", JOptionPane.ERROR_MESSAGE);
-			System.exit(1);
-		}
+//		try {
+//			processor = MaryClient.getMaryClient();
+//			streamMp3 = Boolean.getBoolean("stream.mp3");
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			JOptionPane.showMessageDialog(null, e.getMessage(), "Cannot connect to server", JOptionPane.ERROR_MESSAGE);
+//			System.exit(1);
+//		}
 	}
 
 	public static MainSearcher getSingleton(HabitabberGUI gui, String[] argv) {
@@ -613,15 +613,15 @@ public class MainSearcher {
 			});		
 		}
 		System.out.println(str);
-		try {
-			speak(str);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//			speak(str);
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 	}
 	
 	public void setPage(Page page) {	
@@ -781,7 +781,7 @@ public class MainSearcher {
 	// TODO (03-SEP-2017):
 	// A: Content parsing
 	// 1.) Give regexes also label textfields
-	// 2.) make regexes subclass of "operational values" type (next to int/string/percentage/etc. types)
+	// 2.) make regexes subclass of "operational values" type (next to int - let's call em 'Numbex' - types)
 	// 3.) Implement "operations" type (incl. mathematical operations like +,-,/,%,... and conditions like >,<,==,... and regexes)
 	// 4.) Implement "association" mechanism (operational value -> operation -> operational value); (e.g., )
 	// B: Content display
