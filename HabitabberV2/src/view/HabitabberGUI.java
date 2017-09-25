@@ -3,13 +3,12 @@ package view;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.function.Predicate;
 
+import controller.MainSearcher;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -52,6 +51,7 @@ import utilities.command.CommandFactory;
 import utilities.command.GuiCheckboxCommand;
 import view.action.RemoveAction;
 import view.button.AddRegExButton;
+import view.button.AddSubExButton;
 import view.button.PapaButton;
 import view.button.PopupButton;
 import view.button.RemoveButton;
@@ -65,12 +65,12 @@ import view.field.CookieField;
 import view.field.PapaField;
 import view.field.ParseImmediateField;
 import view.field.RegExField;
-import controller.MainSearcher;
 
 public class HabitabberGUI extends Application {
 
 	public static final int REGEX_TYPE = 0;	
 	public static final int CATEGORY_TYPE = 1;
+	public static final int SUBEX_TYPE = 2;
 
 	public static final String TITLE = "Habitabber";
 
@@ -82,9 +82,9 @@ public class HabitabberGUI extends Application {
 
 	private static GridPane grid;
 
-	private static int hIndex[] = {2, 0};
+	private static int hIndex[] = {2, 0, 0};
 
-	private static int hIndexOffset[] = {hIndex[REGEX_TYPE], 4};
+	private static int hIndexOffset[] = {hIndex[REGEX_TYPE], 4, 0};
 
 	private Map<String, Boolean> checkBoxMap = new HashMap<String, Boolean>();
 
@@ -351,33 +351,35 @@ public class HabitabberGUI extends Application {
 		PapaButton stopButton = new StopButton(this);
 
 		BasicField pageField = new BasicField("-p", "https://www.marktplaats.nl/z.html?attributes=S%2C4548&priceTo=800%2C00&categoryId=2143&postcode=&distance=25000");
-		grid.add(pageField.getTextField(),0,1,4,1);
+		grid.add(pageField.getTextField(),0,1,5,1);
 		searchButton.getButton().setPrefSize(100, 20);		
-		grid.add(searchButton.getButton(),4,1);
+		grid.add(searchButton.getButton(),5,1);
 		stopButton.getButton().setPrefSize(50, 20);
-		grid.add(stopButton.getButton(),5,1);
+		grid.add(stopButton.getButton(),6,1);
 
 		Image stopIcon = new Image(HabitabberGUI.class.getResourceAsStream("/view/stop.png"));
 		stopButton.getButton().setText("");
 		stopButton.getButton().setGraphic(new ImageView(stopIcon));
 
 		scrollPane.setPrefHeight(stage.getMaxHeight());
-		grid.add(scrollPane, 3, 2, 3, 18);
+		grid.add(scrollPane, 4, 2, 3, 18);
 
 		ColumnConstraints col1Constraints = new ColumnConstraints();
 		col1Constraints.setPercentWidth(120);
 		ColumnConstraints col2Constraints = new ColumnConstraints();
 		col2Constraints.setPercentWidth(250);
 		ColumnConstraints col3Constraints = new ColumnConstraints();
-		col3Constraints.setPercentWidth(50);
+		col3Constraints.setPercentWidth(35);
 		ColumnConstraints col4Constraints = new ColumnConstraints();
-		col4Constraints.setPercentWidth(630);
+		col4Constraints.setPercentWidth(35);
 		ColumnConstraints col5Constraints = new ColumnConstraints();
-		col5Constraints.setPercentWidth(100);
+		col5Constraints.setPercentWidth(610);
 		ColumnConstraints col6Constraints = new ColumnConstraints();
-		col6Constraints.setPercentWidth(50);
+		col6Constraints.setPercentWidth(100);
+		ColumnConstraints col7Constraints = new ColumnConstraints();
+		col7Constraints.setPercentWidth(50);
 
-		grid.getColumnConstraints().addAll(col1Constraints, col2Constraints, col3Constraints, col4Constraints, col5Constraints, col6Constraints);
+		grid.getColumnConstraints().addAll(col1Constraints, col2Constraints, col3Constraints, col4Constraints, col5Constraints, col6Constraints, col7Constraints);
 
 		List<String> existingRegExes = new ArrayList<>();
 		Map<String, String> existingCategories = new LinkedHashMap<>();
@@ -414,27 +416,27 @@ public class HabitabberGUI extends Application {
 					ParseImmediateField field = new ParseImmediateField("-" + CommandFactory.getCommandParamByClassName(cmd));
 					if (existingCommand != null)
 						field.getCheckbox().setSelected(existingCommand.getValue().equals("y") ? true : false);
-					grid.add(field.getCheckbox(), 1, hIndex[REGEX_TYPE], 2, 1);
+					grid.add(field.getCheckbox(), 1, hIndex[REGEX_TYPE], 3, 1);
 				} else if (cmd.equals("TokenCommand")){
 					PapaField field = new BasicField("-" + CommandFactory.getCommandParamByClassName(cmd), !existingCommands.isEmpty() ? "" : "huizen-en-kamers");
 					if (existingCommand != null)
 						field.getTextField().setText(existingCommand.getValue());
-					grid.add(field.getTextField(), 1, hIndex[REGEX_TYPE], 2, 1);
+					grid.add(field.getTextField(), 1, hIndex[REGEX_TYPE], 3, 1);
 				} else if (cmd.equals("CookieCommand")) {
 					CookieField field = new CookieField("-" + CommandFactory.getCommandParamByClassName(cmd));
 					if (existingCommand != null)
 						field.getCheckbox().setSelected(existingCommand.getValue().equals("y") ? true : false);
-					grid.add(field.getCheckbox(), 1, hIndex[REGEX_TYPE], 2, 1);
+					grid.add(field.getCheckbox(), 1, hIndex[REGEX_TYPE], 3, 1);
 				} else {
 					if (existingCommand != null)
 						for (String value : existingCommand.getValue().split(Command.DELIMITER)) {
 							PapaField field = new BasicField("-" + CommandFactory.getCommandParamByClassName(cmd));
 							field.getTextField().setText(value);
-							grid.add(field.getTextField(), 1, hIndex[REGEX_TYPE], 2, 1);
+							grid.add(field.getTextField(), 1, hIndex[REGEX_TYPE], 3, 1);
 						}
 					else {
 						PapaField field = new BasicField("-" + CommandFactory.getCommandParamByClassName(cmd));	
-						grid.add(field.getTextField(), 1, hIndex[REGEX_TYPE], 2, 1);
+						grid.add(field.getTextField(), 1, hIndex[REGEX_TYPE], 3, 1);
 					}
 				}
 				//				grid.add(new Label(cmd + " ( -" + CommandFactory.getCommandParamByClassName(cmd) + " )"), 0, hIndex);
@@ -479,12 +481,12 @@ public class HabitabberGUI extends Application {
 		
 		String regExName = "Regex";
 		if (existingRegExes.isEmpty()) {
-			addRegExField(grid, regExName, ".*(((0)[1-9]{2}[0-9][-]?(\\s?)[1-9][0-9]{5})|((\\+31|0|0031)[1-9][0-9][-]?[1-9][0-9]{6})).*", null);
-			addRegExField(grid, regExName, ".*(((\\+31|0|0031)6){1}[1-9]{1}[0-9]{7}).*", null);
-			addRegExField(grid, regExName, ".*(((0)[1-9][-]?\\s?[1-9][0-9]{2}\\s?[0-9]{5})).*", null);
+			addRegExField(grid, regExName, ".*(((0)[1-9]{2}[0-9][-]?(\\s?)[1-9][0-9]{5})|((\\+31|0|0031)[1-9][0-9][-]?[1-9][0-9]{6})).*", null, null);
+			addRegExField(grid, regExName, ".*(((\\+31|0|0031)6){1}[1-9]{1}[0-9]{7}).*", null, null);
+			addRegExField(grid, regExName, ".*(((0)[1-9][-]?\\s?[1-9][0-9]{2}\\s?[0-9]{5})).*", null, null);
 		} else {
 			for (String existingRegEx : existingRegExes)
-				addRegExField(grid, regExName, existingRegEx, null);
+				addRegExField(grid, regExName, existingRegEx, null, null);
 		}
 		
 		if (!existingCategories.isEmpty()) {
@@ -589,22 +591,30 @@ public class HabitabberGUI extends Application {
 	 * Field helper methods
 	 */
 
-	public void addRegExField(GridPane grid, String regExName) {
-		addRegExField(grid, regExName, null);
+	// babyField is the parent field of the field to add
+	public void addRegExField(GridPane grid, String regExName, BabyField babyField) {
+		addRegExField(grid, regExName, null, babyField);
 	}
 
-	public void addRegExField(GridPane grid, String regExName, Integer hIndex) {
-		addRegExField(grid, regExName, "", hIndex);
+	// babyField is the parent field of the field to add
+	public void addRegExField(GridPane grid, String regExName, Integer hIndex, BabyField babyField) {
+		addRegExField(grid, regExName, "", hIndex, babyField);
 	}
 
-	public void addRegExField(GridPane grid, String regExName, String regExValue, Integer hIndex) {
+	// babyField is the parent field of the field to add	
+	public void addRegExField(GridPane grid, String regExName, String regExValue, Integer hIndex, BabyField babyField) {
 		int firstFreeHIndex;
-		if (hIndex == null) {
-			firstFreeHIndex = RegExField.retrieveFirstFreeHIndex();	
-		} else {
+		int indexByAddOrder = PapaField.getValuesOfFieldMap().size();		
+		int type = REGEX_TYPE;
+		if (babyField != null)					
+			firstFreeHIndex = babyField.getHIndex() + 1;
+		else if (hIndex == null)
+			firstFreeHIndex = RegExField.retrieveFirstFreeHIndex();
+		else
 			firstFreeHIndex = RegExField.retrieveFirstFreeHIndex(hIndex);
-		}
-		addPapaField(grid, regExName, regExValue, hIndex, firstFreeHIndex, REGEX_TYPE);
+		RegExField regExField = (RegExField) addBabyField(grid, regExName, regExValue, hIndex, firstFreeHIndex, REGEX_TYPE, indexByAddOrder);
+		if (babyField instanceof RegExField)
+			regExField.setParent((RegExField) babyField);
 		if (hIndex == null) {
 			HabitabberGUI.hIndex[REGEX_TYPE]++;
 		}
@@ -617,29 +627,36 @@ public class HabitabberGUI extends Application {
 		} else {
 			firstFreeHIndex = CategoryField.retrieveFirstFreeHIndex(hIndex);
 		}
-		addPapaField(grid, regExName, regExValue, hIndex, firstFreeHIndex, CATEGORY_TYPE);
+		addBabyField(grid, regExName, regExValue, hIndex, firstFreeHIndex, CATEGORY_TYPE, firstFreeHIndex);
 		if (hIndex == null) {
 			HabitabberGUI.hIndex[CATEGORY_TYPE]++;
 		}
 	}
 
-	public void addPapaField(GridPane grid, String regExName, String regExValue, Integer hIndex, int firstFreeHIndex, int type) {
+	public BabyField addBabyField(GridPane grid, String regExName, String regExValue, Integer hIndex, int firstFreeHIndex, int type, Integer indexByAddOrder) {
 		List<Node> nodeList = new ArrayList<Node>();
-		String name = "" + firstFreeHIndex;
+		String name = regExName + indexByAddOrder;
+		
+		Image addSubExIcon = new Image(HabitabberGUI.class.getResourceAsStream("/view/object.png"));
+		AddSubExButton addSubExButton = null;
 
 		BabyField babyField = null;
 		Control label = null; 
 		if (type == CATEGORY_TYPE) {
+			name += firstFreeHIndex;
 			babyField = new CategoryField(name, regExValue);
 			label = new TextField(regExName + " " + (firstFreeHIndex - getHIndexOffset(type)));			
 			grid.add(label, 0, firstFreeHIndex);
 			grid.add(babyField.getTextField(), 1, firstFreeHIndex);
 		} else {
-			babyField = new RegExField(name, regExValue);
+			babyField = new RegExField(name, regExValue, firstFreeHIndex, grid);
 			label = new Label(regExName + " " + (firstFreeHIndex - getHIndexOffset(type)));		
 			((Label)label).setTextFill(FILL_COLOR);
 			grid.add(label, 0, firstFreeHIndex);
 			grid.add(babyField.getTextField(), 1, firstFreeHIndex);
+			addSubExButton = new AddSubExButton(this, grid, babyField);
+			addSubExButton.getButton().setText("");
+			addSubExButton.getButton().setGraphic(new ImageView(addSubExIcon));
 		}
 
 		Image removeIcon = new Image(HabitabberGUI.class.getResourceAsStream("/view/delete.png"));
@@ -650,10 +667,16 @@ public class HabitabberGUI extends Application {
 		nodeList.add(label);
 		nodeList.add(babyField.getTextField());
 		nodeList.add(removeButton.getButton());
+		if (addSubExButton != null) {
+			grid.add(addSubExButton.getButton(), 3, firstFreeHIndex);
+			nodeList.add(addSubExButton.getButton());
+			babyField.setAddSubExButton(addSubExButton);
+		}
 		babyField.setRegExRowNodes(nodeList);
-		babyField.setHIndex(firstFreeHIndex);		
-		babyField.setRemoveButton(removeButton);
+		babyField.setRemoveButton(removeButton);	
 		babyField.setLabel(label);
+		
+		return babyField;
 	}
 
 	public void reinitializePapaFields(GridPane grid, Map<String, PapaField> fieldMap) {
@@ -673,6 +696,13 @@ public class HabitabberGUI extends Application {
 				removeButton.getButton().setText("");
 				removeButton.getButton().setGraphic(new ImageView(removeIcon));
 				grid.add(removeButton.getButton(), 2, hIndex);
+				AddSubExButton addSubExButton = babyField.getAddSubExButton();
+				if (addSubExButton != null) {
+					Image addSubExIcon = new Image(HabitabberGUI.class.getResourceAsStream("/view/object.png"));
+					addSubExButton.getButton().setText("");
+					addSubExButton.getButton().setGraphic(new ImageView(addSubExIcon));
+					grid.add(addSubExButton.getButton(), 3, hIndex);
+				}
 			}
 		}
 	}
@@ -767,10 +797,11 @@ public class HabitabberGUI extends Application {
 	}
 	
 	public List<String> getArgumentList() {
+		Map<PapaField, Integer> fieldIndexMap = new HashMap<>();
 		List<String> regExes = new ArrayList<>();
 		List<String> categories = new ArrayList<>();
 		List<String> argList = new ArrayList<String>();
-		for (PapaField field : PapaField.getFieldMap().values()) {
+		for (PapaField field : PapaField.getValuesOfFieldMap()) {
 			if (field instanceof ParseImmediateField || field instanceof CookieField){  
 				if (((CheckboxField)field).getCheckbox().isSelected()) {
 					argList.add(field.getName());
@@ -789,10 +820,19 @@ public class HabitabberGUI extends Application {
 					}
 				} 
 			} else if (field instanceof RegExField) {			
-				if (field.getTextField() != null) {					
+				if (field.getTextField() != null) {									
 					String value = field.getTextField().getText();
-					if (value != null && !value.isEmpty())
-						regExes.add(value);
+					if (value != null && !value.isEmpty()) {
+						RegExField parent = ((RegExField) field).getParent();
+						if (parent != null) {
+							int parentIndex = fieldIndexMap.get(parent);
+							value = regExes.get(parentIndex) + " --nc GREATER " + value; //TODO: JUST FOR TESTING!!! Make dynamical (11-SEP-2017)
+							regExes.remove(parentIndex);
+							regExes.add(parentIndex, value);
+						} else 
+							regExes.add(value);
+						fieldIndexMap.put(field, regExes.size()-1);
+					}
 				}
 			} else if (field instanceof CategoryField) {
 				if (field.getTextField() != null) {

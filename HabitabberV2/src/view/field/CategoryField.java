@@ -13,6 +13,6 @@ public class CategoryField extends BabyField {
 	}
 
 	public static int retrieveFirstFreeHIndex(int index) {
-		return retrieveFirstFreeHIndex(index, PapaField.getFieldMap(), HabitabberGUI.CATEGORY_TYPE);
+		return retrieveFirstFreeHIndex(index, PapaField.getValuesOfFieldMap(), HabitabberGUI.CATEGORY_TYPE);
 	}
 }

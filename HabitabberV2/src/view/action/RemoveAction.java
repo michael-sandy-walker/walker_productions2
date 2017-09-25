@@ -18,12 +18,12 @@ public class RemoveAction extends PapaAction {
 	
 	@Override
 	public void performAction() {
-		BabyField field = (BabyField) PapaField.getFieldMap().get(name);
+		BabyField field = BabyField.getFieldOfFieldMap(name);
 		Parent parent = field.getTextField().getParent(); // Grid
 		GridPane grid = (GridPane) parent;
 		for (Node node : field.getRegExRowNodes()) {
 			grid.getChildren().remove(node);
 		}
-		PapaField.getFieldMap().remove(name);
+		PapaField.removeFieldOfFieldMap(name);
 	}
 }

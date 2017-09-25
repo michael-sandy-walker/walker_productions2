@@ -7,8 +7,8 @@ public class Command {
 	
 	public static final String DELIMITER = ";";
 	
-	private String name;
-	private String value;
+	protected String name;
+	protected String value;
 	
 	private static final List<String> registeredCommands = new ArrayList<String>();
 	

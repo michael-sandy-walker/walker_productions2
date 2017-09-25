@@ -1,18 +1,1 @@
-Saved.2017/08/29 21:41:16 - HabitabberV2 initialized.
-2017/08/29 21:41:17 - HabitabberV2 terminated.
-2017/08/29 21:41:35 - HabitabberV2 initialized.
-2017/08/29 21:41:35 - HabitabberV2 terminated.
-2017/08/29 21:41:40 - HabitabberV2 initialized.
-2017/08/29 21:41:40 - HabitabberV2 terminated.
-2017/08/29 21:41:49 - HabitabberV2 initialized.
-Found: http://www.web.de , content:  
-2017/08/29 21:41:49 - HabitabberV2 terminated.
-2017/08/29 21:41:56 - HabitabberV2 initialized.
-Found: http://www.web.de , content:  
-2017/08/29 21:41:56 - HabitabberV2 terminated.
-2017/08/29 21:42:18 - HabitabberV2 initialized.
-Found: https://www.web.de , content:  
-2017/08/29 21:42:21 - HabitabberV2 terminated.
-Saved.2017/08/29 21:43:16 - HabitabberV2 initialized.
-Found: https://www.web.de , content:  
-2017/08/29 21:43:18 - HabitabberV2 terminated.
+HabitabberV2 initialized.

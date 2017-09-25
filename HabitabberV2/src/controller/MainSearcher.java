@@ -36,7 +36,10 @@ import marytts.client.MaryBlankClient;
 import marytts.client.MaryClient;
 import marytts.client.http.MaryHttpClient;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
@@ -56,6 +59,7 @@ import utilities.command.CategoryCommand;
 import utilities.command.Command;
 import utilities.command.CommandFactory;
 import utilities.command.ConcatenatedTokenCommand;
+import utilities.command.ExpressionCommand;
 import utilities.command.GuiCheckboxCommand;
 import utilities.command.LogCommand;
 import utilities.command.MaxSearchCommand;
@@ -76,7 +80,9 @@ public class MainSearcher {
 
 	private List<Token> tokenList = new ArrayList<Token>();
 
-	public final static List<Pattern> patternList = new ArrayList<Pattern>();
+//	public final static List<Pattern> patternList = new ArrayList<Pattern>();
+	public final static Map<ExpressionCommand, Pattern> patternMap = new LinkedHashMap<>();
+	public final static Map<ExpressionCommand, List<ExpressionCommand>> conditionMap = new LinkedHashMap<>();
 	static {
 //		patternList.add(Pattern.compile(".*(((0)[1-9]{2}[0-9][-]?(\\s?)[1-9][0-9]{5})|((\\+31|0|0031)[1-9][0-9][-]?[1-9][0-9]{6})).*"));
 //		patternList.add(Pattern.compile(".*(((\\+31|0|0031)6){1}[1-9]{1}[0-9]{7}).*", Pattern.CASE_INSENSITIVE));
@@ -142,14 +148,14 @@ public class MainSearcher {
 	private MainSearcher(HabitabberGUI gui, String[] argv) {
 		this.gui = gui;
 		
-//		try {
-//			processor = MaryClient.getMaryClient();
-//			streamMp3 = Boolean.getBoolean("stream.mp3");
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			JOptionPane.showMessageDialog(null, e.getMessage(), "Cannot connect to server", JOptionPane.ERROR_MESSAGE);
-//			System.exit(1);
-//		}
+		try {
+			processor = MaryClient.getMaryClient();
+			streamMp3 = Boolean.getBoolean("stream.mp3");
+		} catch (Exception e) {
+			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, e.getMessage(), "Cannot connect to server", JOptionPane.ERROR_MESSAGE);
+			System.exit(1);
+		}
 	}
 
 	public static MainSearcher getSingleton(HabitabberGUI gui, String[] argv) {
@@ -173,7 +179,7 @@ public class MainSearcher {
 				logger.info("Maximum number of searchable pages: " + MAX_SITES);
 				//				io.write(dateFormat.format(date) + " - HabitabberV2 initialized.\n", true);
 //				outputText(dateFormat.format(date) + " - HabitabberV2 initialized.\n");
-				outputText("HabitabberV2 initialized.\n");
+				outputText("HabitabberV2 initialized.\n", "Habitabber initialized.");
 
 				/**
 				 * End setup
@@ -218,10 +224,20 @@ public class MainSearcher {
 					if (cmd instanceof PageCommand && cmd.getValue() != null && !cmd.getValue().isEmpty()) {
 						pageArr = cmd.getValue().split(Command.DELIMITER);
 					} else if (cmd instanceof RegExCommand && cmd.getValue() != null && !cmd.getValue().isEmpty()) {
-						for (String cmdSplitlet : cmd.getValue().split(Command.DELIMITER)) {
-							patternList.add(Pattern.compile(cmdSplitlet));
-						}
-
+//						List<Pattern> patternList = patternMap.get(cmd.toString());
+////						if (patternList == null)
+//							patternList = new ArrayList<>();
+//						for (String cmdSplitlet : cmd.getValue().split(Command.DELIMITER)) {
+//							int indexOfSubExpression = cmdSplitlet.indexOf("--"); // TODO: implement superior mechanism (should be done by separating parent and sub expressions and use multiple expression command objects instead of static map)
+//							if (indexOfSubExpression > -1)
+//								cmdSplitlet = cmdSplitlet.substring(0, indexOfSubExpression);
+//							patternList.add(Pattern.compile(cmdSplitlet));
+//						}
+						
+						RegExCommand regExCommand = (RegExCommand)cmd;
+								
+						patternMap.put(regExCommand, Pattern.compile(regExCommand.getValue()));
+						conditionMap.put(regExCommand, regExCommand.getSubExpressions());
 					} else if (cmd instanceof GuiCheckboxCommand && cmd.getValue() != null && !cmd.getValue().isEmpty()) {
 						for (String keyValue : cmd.getValue().split(Command.DELIMITER)) {
 							String[] keyValuePair = keyValue.split(":");
@@ -253,7 +269,7 @@ public class MainSearcher {
 				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 				Date date = new Date();
 //				outputText(dateFormat.format(date) + " - HabitabberV2 terminated.\n");
-				outputText("HabitabberV2 terminated.\n");
+				outputText("HabitabberV2 terminated.\n", "HabitabberV2 terminated.");
 				String visitedLinkListName = io.getReadFileName();
 				if (visitedLinkListName == null || visitedLinkListName.isEmpty()) {
 					visitedLinkListName = "visitedLinkList.txt";
@@ -285,7 +301,7 @@ public class MainSearcher {
 				value = cmd;
 				cmd = "p";				
 			}
-			result.add(CommandFactory.getCommand(cmd, value));
+			result.addAll(CommandFactory.getCommands(cmd, value));
 			firstParam = false;
 		}
 
@@ -390,7 +406,7 @@ public class MainSearcher {
 				//				System.out.println(str);
 				//				io.write(str + "\n", true);
 				//				io.write(page.getUrl(), true);
-				outputText(str + "\n");
+				outputText(str + "\n", "Found entry!");
 				//				HabitabberGUI.getOutputtextarea().appendText(str);
 			}
 
@@ -562,30 +578,92 @@ public class MainSearcher {
 			search:
 				for (Element elem : doc.getAllElements()) {
 					for (Node node : elem.childNodes()) {
-						if (node instanceof TextNode) {
+						/*if (node instanceof TextNode) {
 							String text = ((TextNode)node).text();
+							if (StringUtils.isBlank(text))
+								continue;
 
-							for (Pattern p : patternList) {
-								Matcher m = p.matcher(text);
-								if (m.matches()) {
-									logger.fine(text);		
-										String str = "Found: " + page.getUrl() + " , content: " + text;
+							pattern_label:
+								for (ExpressionCommand patternKey : patternMap.keySet()) {
+									//								List<ExpressionCommand> subExpressions = RegExCommand.getSubExpressions().get(patternKey); // TODO: Finegrain for to assign one sub expression to individual parent expressions (21-SEP-2017)									
+									Pattern p = patternMap.get(patternKey);													
+									Matcher m = p.matcher(text);
+									while (m.find()) {
+										String result = m.group();
+										List<ExpressionCommand> subExpressions = conditionMap.get(patternKey);
+										if (StringUtils.isNotBlank(result) && subExpressions != null && !subExpressions.isEmpty()) {
+											for (ExpressionCommand subExpression : subExpressions)
+												if (!((boolean) subExpression.evaluate(result)))
+													continue pattern_label;
+										}
+										logger.fine(text);
+										String url = page.getUrl();
+										String str = "Found: " + url + " , content: " + text;
 										//								System.out.println(str);
 										//								io.write(str + "\n", true);
 										//								HabitabberGUI.appendOutputText(str + "\n");
 										//								io.write(page.getUrl(), true);
 										if (!text.trim().isEmpty()) { // We could have a regex like .*
 											page.setContent("tel", text);
-										}
-										outputText(str + "\n");										
+										}																			
+										outputText(str + "\n", "Found entry!");										
 										setPage(page);
 										break search;									
-								}								
-							}						
-						}
+									}								
+								}
+						}*/
+						Integer resultType = parseChildElement(page, node);
+						if (resultType == continueChildNodeLoop)
+							continue;
+						else if (resultType == breakSearch)
+							break search;
 					}
 				}
 		}
+	}
+	
+	private final Integer normal = 0;
+	private final Integer continueChildNodeLoop = 1;
+	private final Integer breakSearch = 2;
+	
+	public Integer parseChildElement(Page page, Node node) {
+		if (node instanceof TextNode) {
+			String text = ((TextNode)node).text();
+			if (StringUtils.isBlank(text))
+				return continueChildNodeLoop;
+
+			pattern_label:
+				for (ExpressionCommand patternKey : patternMap.keySet()) {
+					//								List<ExpressionCommand> subExpressions = RegExCommand.getSubExpressions().get(patternKey); // TODO: Finegrain for to assign one sub expression to individual parent expressions (21-SEP-2017)									
+					Pattern p = patternMap.get(patternKey);													
+					Matcher m = p.matcher(text);
+					while (m.find()) {
+						String result = m.group();
+						List<ExpressionCommand> subExpressions = conditionMap.get(patternKey);
+						if (StringUtils.isNotBlank(result) && subExpressions != null && !subExpressions.isEmpty()) {
+							for (ExpressionCommand subExpression : subExpressions)
+								if (!((boolean) subExpression.evaluate(result)))
+									continue pattern_label;
+						}
+						logger.fine(text);
+						String url = page.getUrl();
+						String str = "Found: " + url + " , content: " + text;
+						//								System.out.println(str);
+						//								io.write(str + "\n", true);
+						//								HabitabberGUI.appendOutputText(str + "\n");
+						//								io.write(page.getUrl(), true);
+						if (!text.trim().isEmpty()) { // We could have a regex like .*
+							page.setContent("tel", text);
+						}																			
+						outputText(str + "\n", "Found entry!");										
+						setPage(page);
+						return breakSearch;							
+					}								
+				}
+		} else if (node instanceof Element && !(node instanceof Comment))
+			for (Node n : ((Element)node).childNodes())
+				return parseChildElement(page, n);
+		return normal;
 	}
 
 	/**
@@ -602,7 +680,7 @@ public class MainSearcher {
 		MainSearcher.stop = stop;
 	}
 
-	public void outputText(String str) {	
+	public void outputText(String str, String maryText) {	
 		io.write(str, true);
 		if (!inMain) {
 			Platform.runLater(new Runnable() {
@@ -613,15 +691,15 @@ public class MainSearcher {
 			});		
 		}
 		System.out.println(str);
-//		try {
-//			speak(str);
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+		try {
+			speak(maryText);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public void setPage(Page page) {	
@@ -674,7 +752,7 @@ public class MainSearcher {
 //				+ "+Robot(amount:100.0;)"
 //				+ "+Whisper(amount:100.0;)"
 //				+ "+Stadium(amount:100.0)"
-				"Chorus(delay1:566;amp1:1.0;delay2:400;amp2:1.0;delay3:2500;amp3:1.0)"
+				"+Chorus(delay1:566;amp1:1.0;delay2:400;amp2:1.0;delay3:2500;amp3:1.0)"
 //				+ "+FIRFilter(type:3;fc1:500.0;fc2:2000.0)"
 //				+ "+JetPilot()"
 ;
@@ -726,7 +804,7 @@ public class MainSearcher {
 				BufferedWriter bw = new BufferedWriter(writer);
 				) {
 			assignInputParams(inputParams.toArray(new String[inputParams.size()]));
-			outputText("Saved.");
+			outputText("Saved.", "Saved.");
 			for (Command command : commandList) {
 				bw.write(command.getName() + CommandFactory.SEPARATOR + command.getValue() + "\n");
 			}

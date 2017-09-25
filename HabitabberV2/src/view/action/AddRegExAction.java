@@ -2,6 +2,7 @@ package view.action;
 
 import javafx.scene.layout.GridPane;
 import view.HabitabberGUI;
+import view.field.BabyField;
 
 public class AddRegExAction extends PapaAction {
 	GridPane grid;
@@ -14,6 +15,6 @@ public class AddRegExAction extends PapaAction {
 	
 	@Override
 	public void performAction() {
-		gui.addRegExField(grid, "Regex");
+		gui.addRegExField(grid, "Regex", null);
 	}
 }

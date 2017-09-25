@@ -13,4 +13,10 @@ public class NumbExMathematicalCommand extends NumbExCommand {
 		return NumbExOperationType.MATHEMATICAL;
 	}
 
+	@Override
+	public Object evaluate(String input) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

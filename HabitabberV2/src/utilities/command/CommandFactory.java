@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 public class CommandFactory {
 	
 	public static final String SEPARATOR = "-#-";
@@ -122,6 +124,14 @@ public class CommandFactory {
 	public static Command getCommand(String name, String value) {
 		Command result = null;
 		
+		int indexOfSubCommand = value.indexOf("--");
+		String subCommandLine = null;
+		if (indexOfSubCommand >= 0) {
+			subCommandLine = value.substring(indexOfSubCommand);
+			int endSubCommand = subCommandLine.indexOf(Command.DELIMITER);
+			if (endSubCommand >= 0)
+				subCommandLine = subCommandLine.substring(0, endSubCommand);
+		}
 		if (name.equals("i")) { // parse immediate
 			result = new ParseImmediateCommand(name, value);
 		} else if (name.equals("l")) { // logger
@@ -137,20 +147,107 @@ public class CommandFactory {
 		} else if (name.equals("c")) {
 			result = new ConcatenatedTokenCommand(name, value);
 		} else if (name.equals("r")) {
-			result = new RegExCommand(name, value, parseSubExpressionCommands(name, value));
+			result = new RegExCommand(name, value, parseSubExpressionCommands(name, subCommandLine));
 		} else if (name.equals("u")) {
 			result = new CookieCommand(name, value);
 		} else if (name.equals("k")) {
 			result = new CategoryCommand(name, value);
 		} else if (name.equals("gcb")) {
 			result = new GuiCheckboxCommand(name, value);
-		} else if (name.equals("nc")) {			
-			result = new NumbExConditionalCommand(name, value, parseSubExpressionCommands(name, value));
+		} else if (name.equals("nc")) {
+			result = new NumbExConditionalCommand(name, value, parseSubExpressionCommands(name, subCommandLine));
 		} else if (name.equals("nm")) {
-			result = new NumbExMathematicalCommand(name, value, parseSubExpressionCommands(name, value));
+			result = new NumbExMathematicalCommand(name, value, parseSubExpressionCommands(name, subCommandLine));
 		}
 		
 		return result;
+	}
+	
+	public static List<Command> getCommands(String name, String value) {
+		List<Command> results = new ArrayList<>();
+		
+//		int indexOfSubCommand = value.indexOf("--");
+//		String subCommandLine = null;
+//		if (indexOfSubCommand >= 0) {
+//			subCommandLine = value.substring(indexOfSubCommand);
+//			int endSubCommand = subCommandLine.indexOf(Command.DELIMITER);
+//			if (endSubCommand >= 0)
+//				subCommandLine = subCommandLine.substring(0, endSubCommand);
+//		}
+		Command result = null;
+		if (name.equals("i")) { // parse immediate
+			result = new ParseImmediateCommand(name, value);
+		} else if (name.equals("l")) { // logger
+			result = new LogCommand(name, value);
+		} else if (name.equals("p")) { // pagina's
+			result = new PageCommand(name, value);
+		} else if (name.equals("m")) { // max searches
+			result = new MaxSearchCommand(name, value);
+		} else if (name.equals("t")) {
+			result = new TokenCommand(name, value);
+		} else if (name.equals("v")) {
+			result = new VisitedLinkCommand(name, value);
+		} else if (name.equals("c")) {
+			result = new ConcatenatedTokenCommand(name, value);
+		} else if (name.equals("r")) {
+			for (Pair<String, String> commandSubCommandPair : extractCommandsAndSubCommands(value))
+				results.add(new RegExCommand(name, commandSubCommandPair.getLeft(), parseSubExpressionCommands(name, commandSubCommandPair.getRight())));
+		} else if (name.equals("u")) {
+			result = new CookieCommand(name, value);
+		} else if (name.equals("k")) {
+			result = new CategoryCommand(name, value);
+		} else if (name.equals("gcb")) {
+			result = new GuiCheckboxCommand(name, value);
+		} else if (name.equals("nc")) {
+			for (Pair<String, String> commandSubCommandPair : extractCommandsAndSubCommands(value))
+				results.add(new NumbExConditionalCommand(name, commandSubCommandPair.getLeft(), parseSubExpressionCommands(name, commandSubCommandPair.getRight())));
+		} else if (name.equals("nm")) {
+			for (Pair<String, String> commandSubCommandPair : extractCommandsAndSubCommands(value))
+				results.add(new NumbExMathematicalCommand(name, commandSubCommandPair.getLeft(), parseSubExpressionCommands(name, commandSubCommandPair.getRight())));
+		}
+		
+		if (result != null)
+			results.add(result);
+		
+		return results;
+	}
+	
+	private static List<Pair<String, String>> extractCommandsAndSubCommands(String value) {
+		Pair<String, String> currentCommandPair = Pair.of("", "");
+		List<Pair<String, String>> commandsSubCommands = new ArrayList<>();
+		String[] lookAheadSplits = value.split(Command.DELIMITER);
+		for (String lookAheadSplit : lookAheadSplits) {
+			if (!currentCommandPair.getLeft().isEmpty() /* we want to assign only sub commands */ && lookAheadSplit.trim().startsWith("--")) {
+				currentCommandPair = Pair.of(currentCommandPair.getLeft(), currentCommandPair.getRight() + getSubCommandLine(lookAheadSplit));
+			} else if (currentCommandPair.getLeft().isEmpty())
+				currentCommandPair = Pair.of(getParentCommandLine(lookAheadSplit), currentCommandPair.getRight() + getSubCommandLine(lookAheadSplit));
+			else {
+				commandsSubCommands.add(currentCommandPair);
+				currentCommandPair = Pair.of(getParentCommandLine(lookAheadSplit), getSubCommandLine(lookAheadSplit));					
+			}					
+		}
+		commandsSubCommands.add(currentCommandPair);
+		return commandsSubCommands;
+	}
+	
+	private static String getParentCommandLine(String value) {
+		String parentCommandLine = value;
+		int indexOfSubCommand = value.indexOf("--");
+		if (indexOfSubCommand >= 0)
+			parentCommandLine = value.substring(0, indexOfSubCommand);		
+		return parentCommandLine;
+	}
+	
+	private static String getSubCommandLine(String value) {
+		String subCommandLine = "";
+		int indexOfSubCommand = value.indexOf("--");
+		if (indexOfSubCommand >= 0) {
+			subCommandLine = value.substring(indexOfSubCommand);
+			int endSubCommand = subCommandLine.indexOf(Command.DELIMITER);
+			if (endSubCommand >= 0)
+				subCommandLine = subCommandLine.substring(0, endSubCommand);
+		}
+		return subCommandLine;
 	}
 	
 	private static List<ExpressionCommand>parseSubExpressionCommands(String parentName, String input) {
@@ -170,9 +267,10 @@ public class CommandFactory {
 			} else {
 				return null;
 			}
-			Command command = CommandFactory.getCommand(parentName + "_" + cmd, value);
+			Command command = CommandFactory.getCommand(cmd, value);
+			command.setName(parentName + "_" + cmd);
 			if (command instanceof ExpressionCommand)
-				result.add((ExpressionCommand)CommandFactory.getCommand(parentName + "_" + cmd, value));
+				result.add((ExpressionCommand)command);
 		}
 
 		return result;
