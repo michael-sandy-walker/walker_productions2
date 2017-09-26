@@ -21,7 +21,7 @@ public class AddSubExAction extends PapaAction {
 	// babyField is the parent field of the field to add
 	@Override
 	public void performAction() {
-		gui.addRegExField(grid, "Subex", babyField);
+		gui.addRegExField(grid, "Subex", babyField, true);
 	}
 
 }

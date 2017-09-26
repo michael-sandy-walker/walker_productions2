@@ -25,7 +25,7 @@ public abstract class BabyField extends PapaField {
 	
 	private AddSubExButton addSubExButton;
 	
-	private Control label;
+	private Node label;
 	private GridPane grid;
 	
 	private static 	Map<String, BabyField> fieldMap = new LinkedHashMap<String, BabyField>();
@@ -73,11 +73,11 @@ public abstract class BabyField extends PapaField {
 		return removeButton;
 	}
 	
-	public void setLabel(Control label) {
+	public void setLabel(Node label) {
 		this.label = label;
 	}
 	
-	public Control getLabel() {
+	public Node getLabel() {
 		return label;
 	}
 

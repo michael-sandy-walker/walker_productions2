@@ -15,6 +15,6 @@ public class AddRegExAction extends PapaAction {
 	
 	@Override
 	public void performAction() {
-		gui.addRegExField(grid, "Regex", null);
+		gui.addRegExField(grid, "Regex", null, false);
 	}
 }

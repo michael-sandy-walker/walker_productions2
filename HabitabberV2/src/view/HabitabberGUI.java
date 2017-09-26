@@ -21,6 +21,7 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
@@ -35,6 +36,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -49,6 +51,7 @@ import utilities.command.CategoryCommand;
 import utilities.command.Command;
 import utilities.command.CommandFactory;
 import utilities.command.GuiCheckboxCommand;
+import utilities.command.NumbExConditionalType;
 import view.action.RemoveAction;
 import view.button.AddRegExButton;
 import view.button.AddSubExButton;
@@ -481,12 +484,12 @@ public class HabitabberGUI extends Application {
 		
 		String regExName = "Regex";
 		if (existingRegExes.isEmpty()) {
-			addRegExField(grid, regExName, ".*(((0)[1-9]{2}[0-9][-]?(\\s?)[1-9][0-9]{5})|((\\+31|0|0031)[1-9][0-9][-]?[1-9][0-9]{6})).*", null, null);
-			addRegExField(grid, regExName, ".*(((\\+31|0|0031)6){1}[1-9]{1}[0-9]{7}).*", null, null);
-			addRegExField(grid, regExName, ".*(((0)[1-9][-]?\\s?[1-9][0-9]{2}\\s?[0-9]{5})).*", null, null);
+			addRegExField(grid, regExName, ".*(((0)[1-9]{2}[0-9][-]?(\\s?)[1-9][0-9]{5})|((\\+31|0|0031)[1-9][0-9][-]?[1-9][0-9]{6})).*", null, null, false);
+			addRegExField(grid, regExName, ".*(((\\+31|0|0031)6){1}[1-9]{1}[0-9]{7}).*", null, null, false);
+			addRegExField(grid, regExName, ".*(((0)[1-9][-]?\\s?[1-9][0-9]{2}\\s?[0-9]{5})).*", null, null, false);
 		} else {
 			for (String existingRegEx : existingRegExes)
-				addRegExField(grid, regExName, existingRegEx, null, null);
+				addRegExField(grid, regExName, existingRegEx, null, null, false /* TODO: also take subExes into account; should be done by enhanced regex/subex determination */);
 		}
 		
 		if (!existingCategories.isEmpty()) {
@@ -592,17 +595,17 @@ public class HabitabberGUI extends Application {
 	 */
 
 	// babyField is the parent field of the field to add
-	public void addRegExField(GridPane grid, String regExName, BabyField babyField) {
-		addRegExField(grid, regExName, null, babyField);
+	public void addRegExField(GridPane grid, String regExName, BabyField babyField, boolean isSubEx) {
+		addRegExField(grid, regExName, null, babyField, isSubEx);
 	}
 
 	// babyField is the parent field of the field to add
-	public void addRegExField(GridPane grid, String regExName, Integer hIndex, BabyField babyField) {
-		addRegExField(grid, regExName, "", hIndex, babyField);
+	public void addRegExField(GridPane grid, String regExName, Integer hIndex, BabyField babyField, boolean isSubEx) {
+		addRegExField(grid, regExName, "", hIndex, babyField, isSubEx);
 	}
 
 	// babyField is the parent field of the field to add	
-	public void addRegExField(GridPane grid, String regExName, String regExValue, Integer hIndex, BabyField babyField) {
+	public void addRegExField(GridPane grid, String regExName, String regExValue, Integer hIndex, BabyField babyField, boolean isSubEx) {
 		int firstFreeHIndex;
 		int indexByAddOrder = PapaField.getValuesOfFieldMap().size();		
 		int type = REGEX_TYPE;
@@ -612,7 +615,7 @@ public class HabitabberGUI extends Application {
 			firstFreeHIndex = RegExField.retrieveFirstFreeHIndex();
 		else
 			firstFreeHIndex = RegExField.retrieveFirstFreeHIndex(hIndex);
-		RegExField regExField = (RegExField) addBabyField(grid, regExName, regExValue, hIndex, firstFreeHIndex, REGEX_TYPE, indexByAddOrder);
+		RegExField regExField = (RegExField) addBabyField(grid, regExName, regExValue, hIndex, firstFreeHIndex, REGEX_TYPE, indexByAddOrder, isSubEx);
 		if (babyField instanceof RegExField)
 			regExField.setParent((RegExField) babyField);
 		if (hIndex == null) {
@@ -627,13 +630,13 @@ public class HabitabberGUI extends Application {
 		} else {
 			firstFreeHIndex = CategoryField.retrieveFirstFreeHIndex(hIndex);
 		}
-		addBabyField(grid, regExName, regExValue, hIndex, firstFreeHIndex, CATEGORY_TYPE, firstFreeHIndex);
+		addBabyField(grid, regExName, regExValue, hIndex, firstFreeHIndex, CATEGORY_TYPE, firstFreeHIndex, false);
 		if (hIndex == null) {
 			HabitabberGUI.hIndex[CATEGORY_TYPE]++;
 		}
 	}
 
-	public BabyField addBabyField(GridPane grid, String regExName, String regExValue, Integer hIndex, int firstFreeHIndex, int type, Integer indexByAddOrder) {
+	public BabyField addBabyField(GridPane grid, String regExName, String regExValue, Integer hIndex, int firstFreeHIndex, int type, Integer indexByAddOrder, boolean isSubEx) {
 		List<Node> nodeList = new ArrayList<Node>();
 		String name = regExName + indexByAddOrder;
 		
@@ -641,17 +644,27 @@ public class HabitabberGUI extends Application {
 		AddSubExButton addSubExButton = null;
 
 		BabyField babyField = null;
-		Control label = null; 
+		Node label = null; 
 		if (type == CATEGORY_TYPE) {
 			name += firstFreeHIndex;
 			babyField = new CategoryField(name, regExValue);
 			label = new TextField(regExName + " " + (firstFreeHIndex - getHIndexOffset(type)));			
-			grid.add(label, 0, firstFreeHIndex);
+			grid.add((Control)label, 0, firstFreeHIndex);
 			grid.add(babyField.getTextField(), 1, firstFreeHIndex);
 		} else {
 			babyField = new RegExField(name, regExValue, firstFreeHIndex, grid);
-			label = new Label(regExName + " " + (firstFreeHIndex - getHIndexOffset(type)));		
-			((Label)label).setTextFill(FILL_COLOR);
+			if (isSubEx) {
+				String[] numbExConditionalTypeStrs = new String[NumbExConditionalType.values().length];
+				int i = 0;
+				for (NumbExConditionalType numbExConditionalType : NumbExConditionalType.values()) {
+					numbExConditionalTypeStrs[i] = numbExConditionalType.getStrValue();
+					i++;
+				}
+				label = new TextChooser(numbExConditionalTypeStrs);
+			} else {
+				label = new Label(regExName + " " + (firstFreeHIndex - getHIndexOffset(type)));		
+				((Label)label).setTextFill(FILL_COLOR);
+			}
 			grid.add(label, 0, firstFreeHIndex);
 			grid.add(babyField.getTextField(), 1, firstFreeHIndex);
 			addSubExButton = new AddSubExButton(this, grid, babyField);
@@ -685,7 +698,7 @@ public class HabitabberGUI extends Application {
 			if (papaField instanceof BabyField) {
 				BabyField babyField =  (BabyField)fieldMap.get(key);
 				int hIndex = babyField.getHIndex();
-				Control label = babyField.getLabel();
+				Node label = babyField.getLabel();
 				if (label instanceof Label)
 					((Label)label).setTextFill(FILL_COLOR);
 				grid.add(label, 0, hIndex);
@@ -824,9 +837,12 @@ public class HabitabberGUI extends Application {
 					String value = field.getTextField().getText();
 					if (value != null && !value.isEmpty()) {
 						RegExField parent = ((RegExField) field).getParent();
-						if (parent != null) {
+						Node label = ((RegExField) field).getLabel();
+						if (parent != null && label instanceof TextChooser) {
 							int parentIndex = fieldIndexMap.get(parent);
-							value = regExes.get(parentIndex) + " --nc GREATER " + value; //TODO: JUST FOR TESTING!!! Make dynamical (11-SEP-2017)
+							TextChooser textChooser = (TextChooser) label;
+							String labelValue = textChooser.getLabel().getText();
+							value = regExes.get(parentIndex) + " --nc " + NumbExConditionalType.getTypeByValue(labelValue).toString() + " " + value; //TODO: JUST FOR TESTING!!! Make dynamical (11-SEP-2017)
 							regExes.remove(parentIndex);
 							regExes.add(parentIndex, value);
 						} else 
@@ -866,5 +882,50 @@ public class HabitabberGUI extends Application {
 		
 		return argList;
 	}
+	
+	 public class TextChooser extends StackPane {
+	        private Label label = new Label();
+	        private ComboBox<String> combo = new ComboBox<>();
+
+	        public TextChooser(String... options) {
+	            StackPane.setAlignment(getLabel(), Pos.CENTER_LEFT);
+	            StackPane.setAlignment(combo, Pos.CENTER_LEFT);
+
+	            getLabel().textProperty().bind(
+	                combo.getSelectionModel().selectedItemProperty()
+	            );
+	            getLabel().visibleProperty().bind(
+	                combo.visibleProperty().not()
+	            );
+	            getLabel().setPadding(new Insets(0, 0, 0, 9));
+	            getLabel().setTextFill(FILL_COLOR);
+
+	            combo.getItems().setAll(options);
+	            combo.getSelectionModel().select(0);
+	            combo.setVisible(false);
+
+	            getLabel().setOnMouseEntered(event -> combo.setVisible(true));
+	            combo.showingProperty().addListener(observable -> {
+	                if (!combo.isShowing()) {
+	                    combo.setVisible(false);
+	                }
+	            });
+	            combo.setOnMouseExited(event -> {
+	                if (!combo.isShowing()) {
+	                    combo.setVisible(false);
+	                }
+	            });
+
+	            getChildren().setAll(getLabel(), combo);
+	        }
+
+			public Label getLabel() {
+				return label;
+			}
+
+			public void setLabel(Label label) {
+				this.label = label;
+			}
+	    }
 
 }
